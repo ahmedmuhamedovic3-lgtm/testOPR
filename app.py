@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session
 from tinydb import TinyDB, Query
+import uuid
 
 app = Flask(__name__)
 app.secret_key = "skrivamoTaKljuč"
@@ -50,6 +51,14 @@ def login():
 def dashboard():
     if "user" not in session:
         return redirect("/login")
+    user = users.get(User.username == session["user"])
+    note = user.get("note", "")
+    return render_template("dashboard.html", note = note, uporabnik = session["user"])
+
+#create new note
+@app.route("/newNote")
+def newNote():
+    id = uuid.uuid4()
     user = users.get(User.username == session["user"])
     note = user.get("note", "")
     return render_template("dashboard.html", note = note, uporabnik = session["user"])
