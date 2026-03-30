@@ -27,7 +27,7 @@ def register():
         if users.search(User.username == username):
             return "Uporabnik obstaja"
 
-        users.insert({"username" : username, "password" : password, "note" : ""})
+        users.insert({"username" : username, "password" : password, "note" : {}})
         return redirect("/login")
 
     return render_template("register.html")
@@ -55,12 +55,23 @@ def dashboard():
     note = user.get("note", "")
     return render_template("dashboard.html", note = note, uporabnik = session["user"])
 
+"""@app.route("/dashboard/<id>")
+def dashboard():
+    if "user" not in session:
+        return redirect("/login")
+    user = users.get(User.username == session["user"])
+    note = user.get("note", "")
+    return render_template("dashboard.html", note = note, uporabnik = session["user"])"""
+
 #create new note
 @app.route("/newNote")
 def newNote():
     id = uuid.uuid4()
+    if "abc" in users[1]:
+        print(1)
     user = users.get(User.username == session["user"])
     note = user.get("note", "")
+    #return redirect(f"/dashboard/{id}")
     return render_template("dashboard.html", note = note, uporabnik = session["user"])
 
 #save_note
@@ -76,4 +87,3 @@ def logout():
     return redirect("/login")
 
 app.run(debug = True)
-#poskus
