@@ -1,0 +1,79 @@
+<!--<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <h2>Note dashboard</h2>
+    Pozdravljen {{ uporabnik }}
+    <br>
+    <textarea oninput="saveNote()" id="note" cols="30" rows="10">{{ note }} </textarea>
+    <button onclick="saveNote()" type="button">SHRANI</button>
+    <br>
+    <a href="/logout">ODJAVI SE</a>
+
+</body>
+
+</html>
+
+<script>
+    function saveNote() {
+        var noteText = document.getElementById("note").value
+        $.ajax({
+            url: "/saveNote",
+            method: "POST",
+            data: {
+                note: noteText
+            },
+            success: function (result) {
+                $("#weather-temp").html("<strong>" + result + "</strong> degrees");
+            }
+        });
+    }
+
+</script>-->
+
+<div id="notes-container">
+    <textarea name="note[]" class="note-box" cols="30" rows="10">{{ note }}</textarea>
+</div>
+
+<br>
+<button type="button" id="add-note-btn">+ Add Another Note</button>
+<button onclick="saveNote()" type="button">SHRANI VSE</button>
+
+<script>
+    $(document).ready(function() {
+        // When the "Add" button is clicked...
+        $("#add-note-btn").click(function() {
+            // Create a new textarea string
+            var newTextArea = '<br><textarea name="note[]" class="note-box" cols="30" rows="10" style="margin-top: 10px;"></textarea>';
+            
+            // Append it to the container
+            $("#notes-container").append(newTextArea);
+        });
+    });
+
+    function saveNote() {
+        // If you want to save ALL notes at once, collect them in an array
+        var allNotes = [];
+        $(".note-box").each(function() {
+            allNotes.push($(this).val());
+        });
+
+        $.ajax({
+            url: "/saveNote",
+            method: "POST",
+            data: { 
+                notes: JSON.stringify(allNotes) // Sending as a JSON array
+            },
+            success: function (result) {
+                alert("All notes saved!");
+            }
+        });
+    }
+</script>
