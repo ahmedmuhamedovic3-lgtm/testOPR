@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, url_for
 from tinydb import TinyDB, Query
 import uuid
 
@@ -27,7 +27,7 @@ def register():
         if users.search(User.username == username):
             return "Uporabnik obstaja"
 
-        users.insert({"username" : username, "password" : password, "note" : {}})
+        users.insert({"username" : username, "password" : password, "note" : None})
         return redirect("/login")
 
     return render_template("register.html")
@@ -47,38 +47,35 @@ def login():
     return render_template("login.html")
 
 #dashboard
-@app.route("/dashboard")
-def dashboard():
-    if "user" not in session:
-        return redirect("/login")
-    user = users.get(User.username == session["user"])
-    note = user.get("note", "")
-    return render_template("dashboard.html", note = note, uporabnik = session["user"])
 
-"""@app.route("/dashboard/<id>")
+
+#edit_note
+@app.route("/dashboard", methods = ["GET", "POST"])
 def dashboard():
     if "user" not in session:
         return redirect("/login")
     user = users.get(User.username == session["user"])
-    note = user.get("note", "")
-    return render_template("dashboard.html", note = note, uporabnik = session["user"])"""
+    if request.method == "POST":
+        edit = request.form["edit"]
+        return redirect("/dashboard")
+    if edit == "0":
+        return render_template("dashboard.html", id = id, uporabnik = session["user"])
+    note = user["note"].get("563812a5-ee16-4816-af38-f11099536da0", "")
+    id = request.args.get('id')
+    return render_template("editNote.html", id = id, note = note, uporabnik = session["user"])
 
 #create new note
 @app.route("/newNote")
 def newNote():
-    id = uuid.uuid4()
-    if "abc" in users[1]:
-        print(1)
-    user = users.get(User.username == session["user"])
-    note = user.get("note", "")
-    #return redirect(f"/dashboard/{id}")
-    return render_template("dashboard.html", note = note, uporabnik = session["user"])
+    id = str(uuid.uuid4())
+    users.update({"note": {id : ""}}, User.username == session["user"])
+    return redirect(url_for('dashboard', id=id))
 
 #save_note
 @app.route("/saveNote", methods = ["POST"])
 def saveNote():
     note = request.form["note"]
-    users.update({"note": note}, User.username == session["user"])
+    users.update({"note": {"563812a5-ee16-4816-af38-f11099536da0": note}}, User.username == session["user"])
     return "SAVED"
 #logout
 @app.route("/logout")
