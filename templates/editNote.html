@@ -10,11 +10,14 @@
 
 <body>
     <h2>Note dashboard</h2>
-    Pozdravljen {{ uporabnik }}
+    Pozdravljen {{ uporabnik }}<span id="id" style="display:none;">{{ id }}</span>
     <br>
     <form action="/dashboard" method="post">
+        <!--<input oninput="saveNote()" type="text" name="title" value="{{ title }}">-->
         <textarea oninput="saveNote()" id="note" cols="30" rows="10">{{ note }}</textarea>
-        <button onclick="saveNote()" type="button" name="edit" value="0">SHRANI</button>
+        <a href="/dashboard">
+            <button onclick="saveNote()" type="button">SHRANI</button>
+        </a>
     </form>
     <br>
     <a href="/logout">ODJAVI SE</a>
@@ -24,13 +27,17 @@
 </html>
 
 <script>
+    const id = "{{ id }}";
     function saveNote() {
         var noteText = document.getElementById("note").value
+        //var title = document.getElementById("title").value
         $.ajax({
             url: "/saveNote",
             method: "POST",
             data: {
-                note: noteText
+                note: noteText,
+                id: id,
+                //title: title
             },
             success: function (result) {
                 $("#weather-temp").html("<strong>" + result + "</strong> degrees");

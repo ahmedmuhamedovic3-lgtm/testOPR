@@ -40,43 +40,60 @@ def login():
         password = request.form["password"]
 
         user = users.get(User.username == username)
-        #print(user)
+        notes = user["note"]
         if user and user["password"] == password:
             session["user"] = username
+            session["notes"] = notes
             return redirect("/dashboard")
     return render_template("login.html")
 
 #dashboard
-
-
-#edit_note
-@app.route("/dashboard", methods = ["GET", "POST"])
+@app.route("/dashboard")
 def dashboard():
     if "user" not in session:
         return redirect("/login")
     user = users.get(User.username == session["user"])
-    if request.method == "POST":
-        edit = request.form["edit"]
-        return redirect("/dashboard")
-    if edit == "0":
-        return render_template("dashboard.html", id = id, uporabnik = session["user"])
-    note = user["note"].get("563812a5-ee16-4816-af38-f11099536da0", "")
-    id = request.args.get('id')
+    session["notes"].update(user["note"])
+    print(session, "dash")
+    return render_template("dashboard.html", uporabnik = session["user"])
+
+#edit_note
+@app.route("/dashboard/<id>")
+def editNote(id):
+    if "user" not in session:
+        return redirect("/login")
+    user = users.get(User.username == session["user"])
+    #return render_template("dashboard.html", id = id, uporabnik = session["user"])
+    note = user["note"].get(id, "")
+    print(session, "edit")
+    #id = request.args.get('id')
     return render_template("editNote.html", id = id, note = note, uporabnik = session["user"])
 
 #create new note
 @app.route("/newNote")
 def newNote():
+    #{f"{id}title": "", 
     id = str(uuid.uuid4())
-    users.update({"note": {id : ""}}, User.username == session["user"])
-    return redirect(url_for('dashboard', id=id))
+    user = users.get(User.username == session["user"])
+    session["notes"].update(user["note"])
+    print(session, "new1")
+    session["notes"].update({id: ""})
+    print(session, "new2")
+    #user["note"].update({id: ""})
+    users.update({"note": session["notes"]}, User.username == session["user"])
+    #print(user)
+    return redirect(url_for('editNote', id=id))
 
 #save_note
 @app.route("/saveNote", methods = ["POST"])
 def saveNote():
     note = request.form["note"]
-    users.update({"note": {"563812a5-ee16-4816-af38-f11099536da0": note}}, User.username == session["user"])
-    return "SAVED"
+    id = request.form["id"]
+    #print(id)
+    session["notes"].update({id: note})
+    print(session, "save")
+    users.update({"note": session["notes"]}, User.username == session["user"])
+    return redirect(url_for('editNote', id=id))
 #logout
 @app.route("/logout")
 def logout():
