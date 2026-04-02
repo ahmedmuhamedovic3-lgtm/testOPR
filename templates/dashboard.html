@@ -13,11 +13,40 @@
     Pozdravljen {{ uporabnik }}
     <br>
     <a href="/newNote">
-        <button type="button">Ustvari nov zapisek</button>
+        <button onclick="newNote()" type="button">Ustvari nov zapisek</button>
     </a>
     <br>
     <br>
+    {% if notes %}
+        <h3>Vaši zapiski:</h3>
+        <ul>
+        {% for id, note in notes.items() %}
+            <li><a href="/dashboard/{{ id }}">{{ note.title }}</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No notes yet. Create one!</p>
+    {% endif %}
+    <br>
+    <br>
     <a href="/logout">ODJAVI SE</a>
+
+
 </body>
 
 </html>
+
+<script>
+    function newNote() {
+        $.ajax({
+            url: "/newNote",
+            method: "POST",
+            data: {
+                notes: notes
+            },
+            success: function (result) {
+                $("#weather-temp").html("<strong>" + result + "</strong> degrees");
+            }
+        });
+    }
+</script>
