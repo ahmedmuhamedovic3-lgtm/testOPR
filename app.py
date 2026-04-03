@@ -28,7 +28,7 @@ def register():
         if users.search(User.username == username):
             return "Uporabnik obstaja"
 
-        users.insert({"username" : username, "password" : password, "note" : {}})
+        users.insert({"username" : username, "password" : password, "admin" : 0, "note" : {}})
         return redirect("/login")
 
     return render_template("register.html")
@@ -43,8 +43,9 @@ def login():
         user = users.get(User.username == username)
         if user and user["password"] == password:
             session["user"] = username
+            session["admin"] = user.get("admin", 0)
             session["notes"] = user["note"]  # Load existing notes into session
-            if password == "admin":
+            if session["admin"] in (1, 2):
                 return redirect("/admin")
             else:
                 return redirect("/dashboard")
@@ -55,10 +56,23 @@ def login():
 def admin():
     if "user" not in session:
         return redirect("/login")
-    if session["user"] != "admin":
+    if session.get("admin", 0) not in (1, 2):
         return redirect("/dashboard")
     print("all users:", get_all_users())
     return render_template("admin.html", uporabnik = session["user"], users = get_all_users())
+
+#admin user notes view
+@app.route("/admin/user/<username>")
+def admin_user_notes(username):
+    if "user" not in session:
+        return redirect("/login")
+    if session.get("admin", 0) not in (1, 2):
+        return redirect("/dashboard")
+    user = users.get(User.username == username)
+    if not user:
+        return "Uporabnik ne obstaja", 404
+    notes = user.get("note", {})
+    return render_template("admin_user_notes.html", uporabnik=session["user"], target_user=username, notes=notes)
 
 #dashboard
 @app.route("/dashboard")
@@ -80,12 +94,22 @@ def get_all_users():
 def editNote(id):
     if "user" not in session:
         return redirect("/login")
-    user = users.get(User.username == session["user"])
-    #return render_template("dashboard.html", id = id, uporabnik = session["user"])
+    
+    # Check if admin is accessing another user's note
+    target_user = request.args.get("user")
+    if target_user and session.get("admin", 0) in (1, 2):
+        # Admin accessing another user's note
+        user = users.get(User.username == target_user)
+    else:
+        # Regular user accessing their own note
+        user = users.get(User.username == session["user"])
+        target_user = None
+    
+    if not user:
+        return "Uporabnik ne obstaja", 404
+    
     note = user["note"].get(id, "")
-    #print(session, "edit")
-    #id = request.args.get('id')
-    return render_template("editNote.html", id = id, note = note, uporabnik = session["user"])
+    return render_template("editNote.html", id = id, note = note, uporabnik = session["user"], target_user = target_user)
 
 #create new note
 @app.route("/newNote")
@@ -105,25 +129,41 @@ def saveNote():
     title = request.form["title"]
     content = request.form["content"]
     id = request.form["id"]
-    # Update the note in session
-    session["notes"][id] = {"title": title, "content": content}
-    # Reassign to make Flask detect the session change
-    session["notes"] = session["notes"]
-    # Save all notes to the database
-    users.update({"note": session["notes"]}, User.username == session["user"])
-    return redirect(url_for('editNote', id=id))
+    target_user = request.form.get("user", "")
+    
+    if target_user and session.get("admin", 0) in (1, 2):
+        # Admin saving another user's note
+        user = users.get(User.username == target_user)
+        if user:
+            user["note"][id] = {"title": title, "content": content}
+            users.update({"note": user["note"]}, User.username == target_user)
+    else:
+        # Regular user saving their own note
+        session["notes"][id] = {"title": title, "content": content}
+        session["notes"] = session["notes"]
+        users.update({"note": session["notes"]}, User.username == session["user"])
+    
+    return "OK"
 
 @app.route("/deleteNote", methods = ["POST"])
 def deleteNote():
     id = request.form["id"]
-    # Remove the note from session
-    if id in session["notes"]:
-        del session["notes"][id]
-    # Reassign to make Flask detect the session change
-    session["notes"] = session["notes"]
-    # Save all notes to the database
-    users.update({"note": session["notes"]}, User.username == session["user"])
-    return redirect(url_for('dashboard'))
+    target_user = request.form.get("user", "")
+    
+    if target_user and session.get("admin", 0) in (1, 2):
+        # Admin deleting another user's note
+        user = users.get(User.username == target_user)
+        if user and id in user["note"]:
+            del user["note"][id]
+            users.update({"note": user["note"]}, User.username == target_user)
+    else:
+        # Regular user deleting their own note
+        if id in session["notes"]:
+            del session["notes"][id]
+        session["notes"] = session["notes"]
+        users.update({"note": session["notes"]}, User.username == session["user"])
+    
+    return "OK"
 
 #logout
 @app.route("/logout")

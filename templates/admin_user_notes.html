@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Admin - {{ target_user }} Notes</title>
+</head>
+<body>
+    <h1>Zapiski uporabnika {{ target_user }}</h1>
+    <p>Admin: Pozdravljen {{ uporabnik }}!</p>
+    <a href="/admin">Nazaj na nadzorno ploščo</a>
+    <br><br>
+
+    {% if notes %}
+        <h2>Zapiski:</h2>
+        <ul>
+        {% for id, note in notes.items() %}
+            <li><strong><a href="/dashboard/{{ id }}?user={{ target_user }}">{{ note.title }}</a></strong></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No notes for this user.</p>
+    {% endif %}
+
+    <br>
+    <a href="/logout">LOGOUT</a>
+</body>
+</html>

@@ -9,7 +9,7 @@
     <h2>Vsi uporabniki</h2>
     <ul>
         {% for user in users %}
-            <li>{{ user.username }}</li>
+            <li><a href="/admin/user/{{ user.username }}">{{ user.username }}</a></li>
         {% endfor %}
     </ul>
     <a href="/logout">LOGOUT</a>
