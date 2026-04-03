@@ -44,7 +44,6 @@ def login():
         if user and user["password"] == password:
             session["user"] = username
             session["admin"] = user.get("admin", 0)
-            session["notes"] = user["note"]  # Load existing notes into session
             return redirect("/dashboard")
     return render_template("login.html")
 
@@ -112,12 +111,11 @@ def editNote(id):
 @app.route("/newNote")
 def newNote():
     id = str(uuid.uuid4())
-    # Add the new empty note to the session notes
-    session["notes"][id] = {"title":"", "content":""}
-    # Reassign to make Flask detect the session change
-    session["notes"] = session["notes"]
-    # Update the database with all notes including the new one
-    users.update({"note": session["notes"]}, User.username == session["user"])
+    # Read current notes from DB, add new empty note, write back
+    user = users.get(User.username == session["user"])
+    notes = user.get("note", {})
+    notes[id] = {"title": "", "content": ""}
+    users.update({"note": notes}, User.username == session["user"])
     return redirect(url_for('editNote', id=id))
 
 #save_note
@@ -127,7 +125,7 @@ def saveNote():
     content = request.form["content"]
     id = request.form["id"]
     target_user = request.form.get("user", "")
-    
+
     if target_user and session.get("admin", 0) in (1, 2):
         # Admin saving another user's note
         user = users.get(User.username == target_user)
@@ -135,18 +133,20 @@ def saveNote():
             user["note"][id] = {"title": title, "content": content}
             users.update({"note": user["note"]}, User.username == target_user)
     else:
-        # Regular user saving their own note
-        session["notes"][id] = {"title": title, "content": content}
-        session["notes"] = session["notes"]
-        users.update({"note": session["notes"]}, User.username == session["user"])
-    
+        # User saving their own note — read from DB, update, write back
+        user = users.get(User.username == session["user"])
+        if user:
+            notes = user.get("note", {})
+            notes[id] = {"title": title, "content": content}
+            users.update({"note": notes}, User.username == session["user"])
+
     return "OK"
 
 @app.route("/deleteNote", methods = ["POST"])
 def deleteNote():
     id = request.form["id"]
     target_user = request.form.get("user", "")
-    
+
     if target_user and session.get("admin", 0) in (1, 2):
         # Admin deleting another user's note
         user = users.get(User.username == target_user)
@@ -154,12 +154,14 @@ def deleteNote():
             del user["note"][id]
             users.update({"note": user["note"]}, User.username == target_user)
     else:
-        # Regular user deleting their own note
-        if id in session["notes"]:
-            del session["notes"][id]
-        session["notes"] = session["notes"]
-        users.update({"note": session["notes"]}, User.username == session["user"])
-    
+        # User deleting their own note — read from DB, delete, write back
+        user = users.get(User.username == session["user"])
+        if user:
+            notes = user.get("note", {})
+            if id in notes:
+                del notes[id]
+            users.update({"note": notes}, User.username == session["user"])
+
     return "OK"
 
 #logout
