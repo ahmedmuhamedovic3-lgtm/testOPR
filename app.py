@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, session, url_for
 from tinydb import TinyDB, Query
 import uuid
+import threading
 
 app = Flask(__name__)
 app.secret_key = "skrivamoTaKljuč"
@@ -8,6 +9,8 @@ app.secret_key = "skrivamoTaKljuč"
 db = TinyDB("db.json")
 all_data = db.all()
 users = db.table("users")
+
+db_lock = threading.Lock()
 
 User = Query()
 
@@ -111,11 +114,11 @@ def editNote(id):
 @app.route("/newNote")
 def newNote():
     id = str(uuid.uuid4())
-    # Read current notes from DB, add new empty note, write back
-    user = users.get(User.username == session["user"])
-    notes = user.get("note", {})
-    notes[id] = {"title": "", "content": ""}
-    users.update({"note": notes}, User.username == session["user"])
+    with db_lock:
+        user = users.get(User.username == session["user"])
+        notes = user.get("note", {})
+        notes[id] = {"title": "", "content": ""}
+        users.update({"note": notes}, User.username == session["user"])
     return redirect(url_for('editNote', id=id))
 
 #save_note
@@ -126,19 +129,20 @@ def saveNote():
     id = request.form["id"]
     target_user = request.form.get("user", "")
 
-    if target_user and session.get("admin", 0) in (1, 2):
-        # Admin saving another user's note
-        user = users.get(User.username == target_user)
-        if user:
-            user["note"][id] = {"title": title, "content": content}
-            users.update({"note": user["note"]}, User.username == target_user)
-    else:
-        # User saving their own note — read from DB, update, write back
-        user = users.get(User.username == session["user"])
-        if user:
-            notes = user.get("note", {})
-            notes[id] = {"title": title, "content": content}
-            users.update({"note": notes}, User.username == session["user"])
+    with db_lock:
+        if target_user and session.get("admin", 0) in (1, 2):
+            # Admin saving another user's note
+            user = users.get(User.username == target_user)
+            if user:
+                user["note"][id] = {"title": title, "content": content}
+                users.update({"note": user["note"]}, User.username == target_user)
+        else:
+            # User saving their own note
+            user = users.get(User.username == session["user"])
+            if user:
+                notes = user.get("note", {})
+                notes[id] = {"title": title, "content": content}
+                users.update({"note": notes}, User.username == session["user"])
 
     return "OK"
 
@@ -147,20 +151,21 @@ def deleteNote():
     id = request.form["id"]
     target_user = request.form.get("user", "")
 
-    if target_user and session.get("admin", 0) in (1, 2):
-        # Admin deleting another user's note
-        user = users.get(User.username == target_user)
-        if user and id in user["note"]:
-            del user["note"][id]
-            users.update({"note": user["note"]}, User.username == target_user)
-    else:
-        # User deleting their own note — read from DB, delete, write back
-        user = users.get(User.username == session["user"])
-        if user:
-            notes = user.get("note", {})
-            if id in notes:
-                del notes[id]
-            users.update({"note": notes}, User.username == session["user"])
+    with db_lock:
+        if target_user and session.get("admin", 0) in (1, 2):
+            # Admin deleting another user's note
+            user = users.get(User.username == target_user)
+            if user and id in user["note"]:
+                del user["note"][id]
+                users.update({"note": user["note"]}, User.username == target_user)
+        else:
+            # User deleting their own note
+            user = users.get(User.username == session["user"])
+            if user:
+                notes = user.get("note", {})
+                if id in notes:
+                    del notes[id]
+                users.update({"note": notes}, User.username == session["user"])
 
     return "OK"
 
