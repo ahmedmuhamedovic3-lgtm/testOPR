@@ -27,6 +27,10 @@
     {% else %}
         <p>No notes yet. Create one!</p>
     {% endif %}
+    {% if admin == 1 or admin == 2 %}
+    <br>
+        <a href="/admin"><h3>Admin funkcije</h3></a>
+    {% endif %}
     <br>
     <br>
     <a href="/logout">ODJAVI SE</a>

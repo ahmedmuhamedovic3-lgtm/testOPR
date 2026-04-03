@@ -45,10 +45,7 @@ def login():
             session["user"] = username
             session["admin"] = user.get("admin", 0)
             session["notes"] = user["note"]  # Load existing notes into session
-            if session["admin"] in (1, 2):
-                return redirect("/admin")
-            else:
-                return redirect("/dashboard")
+            return redirect("/dashboard")
     return render_template("login.html")
 
 #admin
@@ -83,8 +80,8 @@ def dashboard():
     user = users.get(User.username == session["user"])
     notes = user["note"]
     #print(notes)
-    #print(session, "dash")
-    return render_template("dashboard.html", uporabnik = session["user"], notes = notes)
+    print(session, "dash")
+    return render_template("dashboard.html", uporabnik = session["user"], notes = notes, admin = session.get("admin", 0))
 
 def get_all_users():
     return users.all()
