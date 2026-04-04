@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Admin - {{ target_user }} Notes</title>
 </head>
+
 <body>
     <h1>Zapiski uporabnika {{ target_user }}</h1>
     <p>Admin: Pozdravljen {{ uporabnik }}!</p>
@@ -10,17 +12,31 @@
     <br><br>
 
     {% if notes %}
-        <h2>Zapiski:</h2>
-        <ul>
+    <h2>Zapiski:</h2>
+    <ul>
         {% for id, note in notes.items() %}
-            <li><strong><a href="/dashboard/{{ id }}?user={{ target_user }}">{{ note.title }}</a></strong></li>
+        <li><strong><a href="/dashboard/{{ id }}?user={{ target_user }}">{{ note.title }}</a></strong></li>
         {% endfor %}
-        </ul>
+    </ul>
     {% else %}
-        <p>No notes for this user.</p>
+    <p>No notes for this user.</p>
     {% endif %}
 
     <br>
+    <h2>Admin nivo:</h2>
+    <select id="user-role" onchange="updateRole()">
+        <option value="0" {% if admin==0 %}selected{% endif %}>Navaden uporabnik</option>
+        <option value="1" {% if admin==1 %}selected{% endif %}>Moderator</option>
+        <option value="2" {% if admin==2 %}selected{% endif %}>Admin</option>
+    </select>
+    <br>
+    <br>
+    <br>
     <a href="/logout">LOGOUT</a>
 </body>
+
 </html>
+
+<script>
+    
+</script>
