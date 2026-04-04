@@ -48,6 +48,7 @@ def login():
             session["user"] = username
             session["admin"] = user.get("admin", 0)
             return redirect("/dashboard")
+        return render_template("login.html", error="Napačno uporabniško ime ali geslo")
     return render_template("login.html")
 
 #admin
