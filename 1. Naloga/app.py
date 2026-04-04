@@ -29,7 +29,7 @@ def register():
         #print(username, password)
 
         if users.search(User.username == username):
-            return "Uporabnik obstaja"
+            return render_template("register.html", error="Uporabniško ime že obstaja")
 
         users.insert({"username" : username, "password" : password, "admin" : 0, "note" : {}})
         return redirect("/login")
