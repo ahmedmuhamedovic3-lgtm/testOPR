@@ -19,6 +19,7 @@
         <br>
         <a href="/dashboard">
             <button onclick="saveNoteAndRedirect()" type="button">SHRANI</button><br>
+            <button onclick="back()" type="button">NAZAJ</button><br>
             <button onclick="deleteNote()" type="button">IZBRIŠI</button>
         </a>
     </form>
@@ -70,6 +71,14 @@
                 }
             }
         });
+    }
+    function back() {
+        // Redirect based on whether this is admin viewing another user's notes
+        if (targetUser) {
+            window.location.href = "/admin/user/" + targetUser;
+        } else {
+            window.location.href = "/dashboard";
+        }
     }
     function deleteNote() {
         $.ajax({
