@@ -71,7 +71,7 @@ def admin_user_notes(username):
     if not user:
         return "Uporabnik ne obstaja", 404
     notes = user.get("note", {})
-    return render_template("admin_user_notes.html", uporabnik=session["user"], target_user=username, notes=notes)
+    return render_template("admin_user_notes.html", uporabnik=session["user"], target_user=username, notes=notes, admin=session.get("admin", 0))
 
 @app.route("/admin/updateRole", methods=["POST"])
 def update_user_role():
