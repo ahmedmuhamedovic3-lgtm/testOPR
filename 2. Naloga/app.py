@@ -130,14 +130,13 @@ def newNote():
     with db_lock:
         user = users.get(User.username == session["user"])
         notes = user.get("note", {})
-        notes[id] = {"title": "", "content": ""}
+        notes[id] = {"content": ""}
         users.update({"note": notes}, User.username == session["user"])
     return redirect(url_for('editNote', id=id))
 
 #save_note
 @app.route("/saveNote", methods = ["POST"])
 def saveNote():
-    title = request.form["title"]
     content = request.form["content"]
     id = request.form["id"]
     target_user = request.form.get("user", "")
@@ -147,14 +146,14 @@ def saveNote():
             # Admin saving another user's note
             user = users.get(User.username == target_user)
             if user:
-                user["note"][id] = {"title": title, "content": content}
+                user["note"][id] = {"content": content}
                 users.update({"note": user["note"]}, User.username == target_user)
         else:
             # User saving their own note
             user = users.get(User.username == session["user"])
             if user:
                 notes = user.get("note", {})
-                notes[id] = {"title": title, "content": content}
+                notes[id] = {"content": content}
                 users.update({"note": notes}, User.username == session["user"])
 
     return "OK"
