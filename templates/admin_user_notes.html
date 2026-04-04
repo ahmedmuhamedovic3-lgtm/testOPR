@@ -38,5 +38,19 @@
 </html>
 
 <script>
-    
+    const targetUser = "{{ target_user }}";
+    function updateRole() {
+        var selectedRole = document.getElementById("user-role").value;
+        $.ajax({
+            url: "/admin/updateRole",
+            method: "POST",
+            data: {
+                user: targetUser,
+                role: selectedRole
+            },
+            success: function (result) {
+                alert("Role updated successfully!");
+            }
+        });
+    }
 </script>
