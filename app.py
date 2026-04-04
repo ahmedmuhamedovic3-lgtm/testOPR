@@ -74,7 +74,9 @@ def admin_user_notes(username):
     return render_template("admin_user_notes.html", uporabnik=session["user"], target_user=username, notes=notes)
 
 @app.route("/admin/updateRole", methods=["POST"])
-def update_user_role(username, new_role):
+def update_user_role():
+    username = request.form["username"]
+    new_role = int(request.form["role"])
     with db_lock:
         user = users.get(User.username == username)
         if user:
