@@ -17,11 +17,9 @@
         <br>
         <textarea oninput="saveNote()" id="note" cols="30" rows="10">{{ note.content | default('') }}</textarea>
         <br>
-        <a href="/dashboard">
-            <button onclick="saveNoteAndRedirect()" type="button">SHRANI</button><br>
-            <button onclick="back()" type="button">NAZAJ</button><br>
-            <button onclick="deleteNote()" type="button">IZBRIŠI</button>
-        </a>
+        <button onclick="saveNoteAndRedirect()" type="button">SHRANI</button><br>
+        <button onclick="back()" type="button">NAZAJ</button><br>
+        <button onclick="deleteNote()" type="button">IZBRIŠI</button>
     </form>
     <br>
     <a href="/logout">ODJAVI SE</a>
