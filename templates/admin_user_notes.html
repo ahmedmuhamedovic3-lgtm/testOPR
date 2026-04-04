@@ -25,6 +25,7 @@
     <p>No notes for this user.</p>
     {% endif %}
 
+    {% if admin == 2 %}
     <br>
     <h2>Admin nivo:</h2>
     <select id="user-role" onchange="updateRole()">
@@ -33,6 +34,7 @@
         <option value="2" {% if admin==2 %}selected{% endif %}>Admin</option>
     </select>
     <br>
+    {% endif %}
     <br>
     <br>
     <a href="/logout">LOGOUT</a>
