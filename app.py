@@ -73,12 +73,13 @@ def admin_user_notes(username):
     notes = user.get("note", {})
     return render_template("admin_user_notes.html", uporabnik=session["user"], target_user=username, notes=notes)
 
-@app.route("/admin/update_role", methods=["POST"])
+@app.route("/admin/updateRole", methods=["POST"])
 def update_user_role(username, new_role):
     with db_lock:
         user = users.get(User.username == username)
         if user:
             users.update({"admin": new_role}, User.username == username)
+    return "OK"
 
 #dashboard
 @app.route("/dashboard")
