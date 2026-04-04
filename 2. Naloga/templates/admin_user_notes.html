@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Admin - {{ target_user }} Notes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <h1>Zapiski uporabnika {{ target_user }}</h1>
+    <p>Admin: Pozdravljen {{ uporabnik }}!</p>
+    <a href="/admin">Nazaj na nadzorno ploščo</a>
+    <br><br>
+
+    {% if notes %}
+    <h2>Zapiski:</h2>
+    <ul>
+        {% for id, note in notes.items() %}
+        <li><strong><a href="/dashboard/{{ id }}?user={{ target_user }}">{{ note.title }}</a></strong></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p><strong>{{ target_user }} nima nobenih zapiskov</strong></p>
+    {% endif %}
+
+    {% if admin == 2 %}
+    <br>
+    <h2>Admin nivo:</h2>
+    <select id="user-role" onchange="updateRole()">
+        <option value="0" {% if target_admin==0 %}selected{% endif %}>Navaden uporabnik</option>
+        <option value="1" {% if target_admin==1 %}selected{% endif %}>Moderator</option>
+        <option value="2" {% if target_admin==2 %}selected{% endif %}>Admin</option>
+    </select>
+    <br>
+    {% endif %}
+    <br>
+    <br>
+    <a href="/logout">LOGOUT</a>
+</body>
+
+</html>
+
+<script>
+    const targetUser = "{{ target_user }}";
+    function updateRole() {
+        var selectedRole = document.getElementById("user-role").value;
+        $.ajax({
+            url: "/admin/updateRole",
+            method: "POST",
+            data: {
+                username: targetUser,
+                role: selectedRole
+            },
+            success: function (result) {
+            }
+        });
+    }
+</script>

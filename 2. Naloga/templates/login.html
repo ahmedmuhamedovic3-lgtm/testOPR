@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h2>Prijavi se</h2>
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form action="/login" method="post">
+        <input type="text" name="username">
+        <input type="text" name="password">
+        <button type="submit">LOGIN</button>
+    </form>
+
+<a href="/register">Še nimaš računa?</a>
+</body>
+</html>
