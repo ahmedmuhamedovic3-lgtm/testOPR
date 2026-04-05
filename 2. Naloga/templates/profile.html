@@ -2,14 +2,14 @@
 <html lang="en">
 
 <head>
-    <title>Dashboard</title>
+    <title>Profil</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
         integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 
 <body>
-    <h1>Note dashboard</h1>
+    <h1>Tvoj profil</h1>
     Pozdravljen {{ uporabnik }}
     <br>
     <a href="/newNote">
@@ -18,14 +18,13 @@
     <br>
     <br>
     {% if notes %}
-        <h2>Vaši zapiski:</h2>
-        <ul>
+        <h2>Vaše objave:</h2>
         {% for id, note in notes.items() %}
-            <li><a href="/dashboard/{{ id }}">{{ note.title }}</a></li>
+            <p style="white-space: pre-wrap;">{{ note.content[:50] }}{% if note.content|length > 50 %}...{% endif %}</p>
+            <a href="/profile/{{ id }}"><button type="button">UREDI</button></a>
         {% endfor %}
-        </ul>
     {% else %}
-        <p>Še ni zapiskov. Ustvarite enega!</p>
+        <p>Še ni objav. Ustvarite prvo objavo!</p>
     {% endif %}
     {% if admin == 1 or admin == 2 %}
     <br>
@@ -33,6 +32,7 @@
     {% endif %}
     <br>
     <br>
+    <a href="/dashboard">NAZAJ</a><br>
     <a href="/logout">ODJAVI SE</a>
 
 

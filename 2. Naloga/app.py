@@ -98,6 +98,18 @@ def dashboard():
     print(session, "dash")
     return render_template("dashboard.html", uporabnik = session["user"], notes = notes, admin = session.get("admin", 0))
 
+#profile
+@app.route("/profile")
+def profile():
+    if "user" not in session:
+        return redirect("/login")
+    print("all users:", get_all_users())
+    user = users.get(User.username == session["user"])
+    notes = user["note"]
+    #print(notes)
+    print(session, "dash")
+    return render_template("profile.html", uporabnik = session["user"], notes = notes, admin = session.get("admin", 0))
+
 def get_all_users():
     return users.all()
 
