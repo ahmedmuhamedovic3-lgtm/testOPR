@@ -27,6 +27,15 @@ def home():
 @app.route("/register", methods = ["GET", "POST"])
 def register():
     if request.method == "POST":
+        # Existing user setting up security question
+        if session.get("need_security"):
+            question = request.form["security_question"]
+            answer = request.form["security_answer"].lower()
+            with db_lock:
+                users.update({"security_question": question, "security_answer": generate_password_hash(answer)}, User.username == session["user"])
+            session.pop("need_security", None)
+            return redirect("/dashboard")
+        # New user registration
         username = request.form["username"] # shranimo spremenljivke iz registracije
         password = request.form["password"]
         #print(username, password)
@@ -50,6 +59,10 @@ def login():
         if user and check_password_hash(user["password"], password):
             session["user"] = username
             session["admin"] = user.get("admin", 0)
+            # Check if security question is set
+            if not user.get("security_question"):
+                session["need_security"] = True
+                return redirect("/register")
             return redirect("/dashboard")
         return render_template("login.html", error="Napačno uporabniško ime ali geslo")
     return render_template("login.html")

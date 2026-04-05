@@ -9,10 +9,12 @@
     <p style="color: red;">{{ error }}</p>
     {% endif %}
     <form action="/register" method="post">
+        {% if not session.get("need_security") %}
         <label>Uporabniško ime:</label><br>
         <input type="text" name="username" required><br><br>
         <label>Geslo:</label><br>
         <input type="password" name="password" required><br><br>
+        {% endif %}
         <label>Varnostno vprašanje:</label><br>
         <select name="security_question" required>
             <option value="">-- Izberi vprašanje --</option>
@@ -22,9 +24,14 @@
         </select><br><br>
         <label>Odgovor:</label><br>
         <input type="text" name="security_answer" required><br><br>
+        {% if session.get("need_security") %}
+        <button type="submit">NASTAVI</button>
+        {% else %}
         <button type="submit">REGISTER</button>
+        {% endif %}
     </form>
-
-<a href="/login">Si že registriran?</a>
+    {% if not session.get("need_security") %}
+    <a href="/login">Si že registriran?</a>
+    {% endif %}
 </body>
 </html>
