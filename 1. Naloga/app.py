@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, url_for
 from tinydb import TinyDB, Query
+from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 import threading
 
@@ -33,7 +34,7 @@ def register():
         if users.search(User.username == username):
             return render_template("register.html", error="Uporabniško ime že obstaja")
 
-        users.insert({"username" : username, "password" : password, "admin" : 0, "note" : {}})
+        users.insert({"username" : username, "password" : generate_password_hash(password), "admin" : 0, "note" : {}})
         return redirect("/login")
 
     return render_template("register.html")
@@ -46,7 +47,7 @@ def login():
         password = request.form["password"]
 
         user = users.get(User.username == username)
-        if user and user["password"] == password:
+        if user and check_password_hash(user["password"], password):
             session["user"] = username
             session["admin"] = user.get("admin", 0)
             return redirect("/dashboard")
