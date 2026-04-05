@@ -202,4 +202,19 @@ def logout():
     session.clear()
     return redirect("/login")
 
+#forgot password
+@app.route("/forgot", methods=["GET", "POST"])
+def forgot():
+    if request.method == "POST":
+        username = request.form["username"]
+        user = users.get(User.username == username)
+        if user:
+            # Generate a temporary password
+            temp_password = uuid.uuid4().hex[:8]
+            with db_lock:
+                users.update({"password": generate_password_hash(temp_password)}, User.username == username)
+            return render_template("forgot.html", temp_password=temp_password, username=username)
+        return render_template("forgot.html", error="Uporabniško ime ne obstaja")
+    return render_template("forgot.html")
+
 app.run(debug = True)

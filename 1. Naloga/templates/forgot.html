@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Pozabljeno geslo</title>
+</head>
+<body>
+    <h2>Pozabljeno geslo</h2>
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    {% if temp_password %}
+    <p>Za uporabnika <strong>{{ username }}</strong> je bilo geslo ponastavljeno.</p>
+    <p>Začasno geslo: <strong>{{ temp_password }}</strong></p>
+    <p>Prijavi se z začasnim geslom in ga takoj spremeni.</p>
+    <a href="/login">Nazaj na prijavo</a>
+    {% else %}
+    <form action="/forgot" method="post">
+        <label for="username">Uporabniško ime:</label>
+        <input type="text" name="username" id="username" required>
+        <br><br>
+        <button type="submit">Ponastavi geslo</button>
+    </form>
+    <br>
+    <a href="/login">Nazaj na prijavo</a>
+    {% endif %}
+</body>
+</html>
