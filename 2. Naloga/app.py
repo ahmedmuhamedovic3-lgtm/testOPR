@@ -17,9 +17,11 @@ User = Query()
 #home
 @app.route("/")
 def home():
-    if "user" in session:
-        return redirect("/dashboard")
-    return redirect("/login")
+    if users:
+        if "user" in session:
+            return redirect("/dashboard")
+        return redirect("/login")
+    return redirect("/register")
 #register
 @app.route("/register", methods = ["GET", "POST"])
 def register():
@@ -29,7 +31,7 @@ def register():
         #print(username, password)
 
         if users.search(User.username == username):
-            return "Uporabnik obstaja"
+            return render_template("register.html", error="Uporabniško ime že obstaja")
 
         users.insert({"username" : username, "password" : password, "admin" : 0, "note" : {}})
         return redirect("/login")
@@ -48,6 +50,7 @@ def login():
             session["user"] = username
             session["admin"] = user.get("admin", 0)
             return redirect("/dashboard")
+        return render_template("login.html", error="Napačno uporabniško ime ali geslo")
     return render_template("login.html")
 
 #admin
@@ -71,7 +74,17 @@ def admin_user_notes(username):
     if not user:
         return "Uporabnik ne obstaja", 404
     notes = user.get("note", {})
-    return render_template("admin_user_notes.html", uporabnik=session["user"], target_user=username, notes=notes)
+    return render_template("admin_user_notes.html", uporabnik=session["user"], target_user=username, notes=notes, admin=session.get("admin", 0), target_admin=user.get("admin", 0))
+
+@app.route("/admin/updateRole", methods=["POST"])
+def update_user_role():
+    username = request.form["username"]
+    new_role = int(request.form["role"])
+    with db_lock:
+        user = users.get(User.username == username)
+        if user:
+            users.update({"admin": new_role}, User.username == username)
+    return "OK"
 
 #dashboard
 @app.route("/dashboard")
@@ -117,14 +130,13 @@ def newNote():
     with db_lock:
         user = users.get(User.username == session["user"])
         notes = user.get("note", {})
-        notes[id] = {"title": "", "content": ""}
+        notes[id] = {"content": ""}
         users.update({"note": notes}, User.username == session["user"])
     return redirect(url_for('editNote', id=id))
 
 #save_note
 @app.route("/saveNote", methods = ["POST"])
 def saveNote():
-    title = request.form["title"]
     content = request.form["content"]
     id = request.form["id"]
     target_user = request.form.get("user", "")
@@ -134,14 +146,14 @@ def saveNote():
             # Admin saving another user's note
             user = users.get(User.username == target_user)
             if user:
-                user["note"][id] = {"title": title, "content": content}
+                user["note"][id] = {"content": content}
                 users.update({"note": user["note"]}, User.username == target_user)
         else:
             # User saving their own note
             user = users.get(User.username == session["user"])
             if user:
                 notes = user.get("note", {})
-                notes[id] = {"title": title, "content": content}
+                notes[id] = {"content": content}
                 users.update({"note": notes}, User.username == session["user"])
 
     return "OK"

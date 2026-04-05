@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <h2>Note dashboard</h2>
+    Pozdravljen {{ uporabnik }}
+    <br>
+    <a href="/newNote">
+        <button onclick="newNote()" type="button">Ustvari nov zapisek</button>
+    </a>
+    <br>
+    <br>
+    {% if notes %}
+        <h3>Vaši zapiski:</h3>
+        <ul>
+        {% for id, note in notes.items() %}
+            <li>
+                <p>{{ note.content[:50] }}{% if note.content|length > 50 %}...{% endif %}</p>
+                <a href="/dashboard/{{ id }}"><button type="button">UREDI</button></a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Še ni objav. Ustvarite prvo objavo!</p>
+    {% endif %}
+    {% if admin == 1 or admin == 2 %}
+    <br>
+        <a href="/admin"><h3>Admin funkcije</h3></a>
+    {% endif %}
+    <br>
+    <br>
+    <a href="/logout">ODJAVI SE</a>
+
+
+</body>
+
+</html>
+
+<script>
+    function newNote() {
+        $.ajax({
+            url: "/newNote",
+            method: "POST",
+            data: {
+                notes: notes
+            },
+            success: function (result) {
+                $("#weather-temp").html("<strong>" + result + "</strong> degrees");
+            }
+        });
+    }
+</script>
