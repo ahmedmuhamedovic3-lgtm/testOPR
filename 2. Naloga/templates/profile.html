@@ -21,7 +21,7 @@
         <h2>Vaše objave:</h2>
         {% for id, note in notes.items() %}
             <p style="white-space: pre-wrap;">{{ note.content[:50] }}{% if note.content|length > 50 %}...{% endif %}</p>
-            <a href="/profile/{{ id }}"><button type="button">UREDI</button></a>
+            <a href="/dashboard/{{ id }}"><button type="button">UREDI</button></a>
         {% endfor %}
     {% else %}
         <p>Še ni objav. Ustvarite prvo objavo!</p>
