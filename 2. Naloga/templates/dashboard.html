@@ -14,13 +14,10 @@
         {% for post in posts %}
             <p><strong>{{ post.username }}</strong></p>
             <p style="white-space: pre-wrap;">{{ post.content[:50] }}{% if post.content|length > 50 %}...{% endif %}</p>
-            <br>
         {% endfor %}
     {% else %}
         <p>Še ni objav.</p>
     {% endif %}
-    <br>
-    <br>
     <a href="/logout">ODJAVI SE</a>
 </body>
 </html>
