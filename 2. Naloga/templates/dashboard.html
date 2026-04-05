@@ -14,9 +14,9 @@
         {% for post in posts %}
             <p><strong>{{ post.username }}</strong></p>
             <p style="white-space: pre-wrap;">{{ post.content[:50] }}{% if post.content|length > 50 %}...{% endif %}</p>
-            <a href="javascript:void(0)" onclick="like(post)">👍</a>
-            <a href="javascript:void(0)" onclick="dislike(post)">👎</a>
-            <a href="javascript:void(0)" onclick="comment(post)">💬</a>
+            <a href="javascript:void(0)" onclick="like('{{ post.id }}')">👍</a>
+            <a href="javascript:void(0)" onclick="dislike('{{ post.id }}')">👎</a>
+            <a href="javascript:void(0)" onclick="comment('{{ post.id }}')">💬</a>
         {% endfor %}
         <br><br><br>
     {% else %}
@@ -27,36 +27,36 @@
 </html>
 
 <script>
-    function like(post) {
+    function like(id) {
         $.ajax({
             url: "/like",
             method: "POST",
             data: {
-                post_id: post
+                id: id
             },
             success: function (result) {
                 // Handle like response if needed
             }
         });
     }
-    function dislike(post) {
+    function dislike(id) {
         $.ajax({
             url: "/dislike",
             method: "POST",
             data: {
-                post_id: post
+                id: id
             },
             success: function (result) {
                 // Handle dislike response if needed
             }
         });
     }
-    function comment(post) {
+    function comment(id) {
         $.ajax({
             url: "/comment",
             method: "POST",
             data: {
-                post_id: post
+                id: id
             },
             success: function (result) {
                 // Handle comment response if needed
