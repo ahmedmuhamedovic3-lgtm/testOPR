@@ -9,8 +9,19 @@
     <p style="color: red;">{{ error }}</p>
     {% endif %}
     <form action="/register" method="post">
-        <input type="text" name="username">
-        <input type="text" name="password">
+        <label>Uporabniško ime:</label><br>
+        <input type="text" name="username" required><br><br>
+        <label>Geslo:</label><br>
+        <input type="password" name="password" required><br><br>
+        <label>Varnostno vprašanje:</label><br>
+        <select name="security_question" required>
+            <option value="">-- Izberi vprašanje --</option>
+            <option value="pet">Kako se je imenovalo tvoje prvo hišnega ljubljenčka?</option>
+            <option value="solo">Kako se imenuje osnovna šola, ki si jo obiskoval?</option>
+            <option value="rojstni">Katerega meseca imaš rojstni dan?</option>
+        </select><br><br>
+        <label>Odgovor:</label><br>
+        <input type="text" name="security_answer" required><br><br>
         <button type="submit">REGISTER</button>
     </form>
 

@@ -34,7 +34,7 @@ def register():
         if users.search(User.username == username):
             return render_template("register.html", error="Uporabniško ime že obstaja")
 
-        users.insert({"username" : username, "password" : generate_password_hash(password), "admin" : 0, "note" : {}})
+        users.insert({"username" : username, "password" : generate_password_hash(password), "admin" : 0, "note" : {}, "security_question": request.form["security_question"], "security_answer": generate_password_hash(request.form["security_answer"].lower())})
         return redirect("/login")
 
     return render_template("register.html")
@@ -202,19 +202,50 @@ def logout():
     session.clear()
     return redirect("/login")
 
-#forgot password
+#forgot password - step 1: enter username
 @app.route("/forgot", methods=["GET", "POST"])
 def forgot():
     if request.method == "POST":
         username = request.form["username"]
         user = users.get(User.username == username)
         if user:
-            # Generate a temporary password
-            temp_password = uuid.uuid4().hex[:8]
-            with db_lock:
-                users.update({"password": generate_password_hash(temp_password)}, User.username == username)
-            return render_template("forgot.html", temp_password=temp_password, username=username)
+            question = user.get("security_question", "")
+            session["reset_username"] = username
+            return render_template("forgot.html", question=question, username=username)
         return render_template("forgot.html", error="Uporabniško ime ne obstaja")
     return render_template("forgot.html")
+
+#forgot password - step 2: verify answer
+@app.route("/forgot/verify", methods=["POST"])
+def forgot_verify():
+    username = request.form["username"]
+    answer = request.form["security_answer"].lower()
+    user = users.get(User.username == username)
+    if user and check_password_hash(user.get("security_answer", ""), answer):
+        temp_password = uuid.uuid4().hex[:8]
+        with db_lock:
+            users.update({"password": generate_password_hash(temp_password)}, User.username == username)
+        return render_template("forgot.html", temp_password=temp_password, username=username)
+    return render_template("forgot.html", error="Napačen odgovor", question=user.get("security_question", ""), username=username)
+
+#change password
+@app.route("/change-password", methods=["GET", "POST"])
+def change_password():
+    if "user" not in session:
+        return redirect("/login")
+    if request.method == "POST":
+        current_password = request.form["current_password"]
+        new_password = request.form["new_password"]
+        confirm_password = request.form["confirm_password"]
+
+        user = users.get(User.username == session["user"])
+        if not check_password_hash(user["password"], current_password):
+            return render_template("change_password.html", error="Trenutno geslo ni pravilno")
+        if new_password != confirm_password:
+            return render_template("change_password.html", error="Novi gesli se ne ujemata")
+        with db_lock:
+            users.update({"password": generate_password_hash(new_password)}, User.username == session["user"])
+        return redirect("/dashboard")
+    return render_template("change_password.html")
 
 app.run(debug = True)

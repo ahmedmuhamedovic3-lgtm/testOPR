@@ -11,17 +11,24 @@
     {% if temp_password %}
     <p>Za uporabnika <strong>{{ username }}</strong> je bilo geslo ponastavljeno.</p>
     <p>Začasno geslo: <strong>{{ temp_password }}</strong></p>
-    <p>Prijavi se z začasnim geslom in ga takoj spremeni.</p>
-    <a href="/login">Nazaj na prijavo</a>
+    <p><a href="/login">Prijavi se</a></p>
+    {% elif question %}
+    <p>Varnostno vprašanje za <strong>{{ username }}</strong>:</p>
+    <p><em>{{ question }}</em></p>
+    <form action="/forgot/verify" method="post">
+        <input type="hidden" name="username" value="{{ username }}">
+        <label>Odgovor:</label><br>
+        <input type="text" name="security_answer" required><br><br>
+        <button type="submit">Potrdi</button>
+    </form>
     {% else %}
     <form action="/forgot" method="post">
-        <label for="username">Uporabniško ime:</label>
-        <input type="text" name="username" id="username" required>
-        <br><br>
-        <button type="submit">Ponastavi geslo</button>
+        <label>Uporabniško ime:</label><br>
+        <input type="text" name="username" required><br><br>
+        <button type="submit">Naprej</button>
     </form>
+    {% endif %}
     <br>
     <a href="/login">Nazaj na prijavo</a>
-    {% endif %}
 </body>
 </html>
