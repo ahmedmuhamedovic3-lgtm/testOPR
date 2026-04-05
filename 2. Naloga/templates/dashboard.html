@@ -5,7 +5,7 @@
 </head>
 <body>
     <h1>Note dashboard</h1>
-    Pozdravljen {{ uporabnik }}
+    Pozdravljen {{ uporabnik }} {{ posts }}
     <br>
     <a href="/profile">Tvoj profil</a>
     <br>
@@ -14,10 +14,53 @@
         {% for post in posts %}
             <p><strong>{{ post.username }}</strong></p>
             <p style="white-space: pre-wrap;">{{ post.content[:50] }}{% if post.content|length > 50 %}...{% endif %}</p>
+            <a href="javascript:void(0)" onclick="like(post)">👍</a>
+            <a href="javascript:void(0)" onclick="dislike(post)">👎</a>
+            <a href="javascript:void(0)" onclick="comment(post)">💬</a>
         {% endfor %}
+        <br><br><br>
     {% else %}
         <p>Še ni objav.</p>
     {% endif %}
     <a href="/logout">ODJAVI SE</a>
 </body>
 </html>
+
+<script>
+    function like(post) {
+        $.ajax({
+            url: "/like",
+            method: "POST",
+            data: {
+                post_id: post
+            },
+            success: function (result) {
+                // Handle like response if needed
+            }
+        });
+    }
+    function dislike(post) {
+        $.ajax({
+            url: "/dislike",
+            method: "POST",
+            data: {
+                post_id: post
+            },
+            success: function (result) {
+                // Handle dislike response if needed
+            }
+        });
+    }
+    function comment(post) {
+        $.ajax({
+            url: "/comment",
+            method: "POST",
+            data: {
+                post_id: post
+            },
+            success: function (result) {
+                // Handle comment response if needed
+            }
+        });
+    }
+</script>

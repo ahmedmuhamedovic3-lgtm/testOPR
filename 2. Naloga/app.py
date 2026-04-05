@@ -114,6 +114,46 @@ def dashboard():
     print(session, "dash")
     return render_template("dashboard.html", uporabnik = session["user"], posts = posts, admin = session.get("admin", 0))
 
+#like
+@app.route("/like", methods=["POST"])
+def like():
+    note_id = request.form["id"]
+    target_user = request.form.get("user", "")
+    with db_lock:
+        if target_user and session.get("admin", 0) in (1, 2):
+            user = users.get(User.username == target_user)
+            if user and note_id in user["note"]:
+                user["note"][note_id]["like"] += 1
+                users.update({"note": user["note"]}, User.username == target_user)
+        else:
+            user = users.get(User.username == session["user"])
+            if user and note_id in user["note"]:
+                user["note"][note_id]["like"] += 1
+                users.update({"note": user["note"]}, User.username == session["user"])
+    return "OK"
+
+#dislike
+@app.route("/dislike", methods=["POST"])
+def dislike():
+    note_id = request.form["id"]
+    target_user = request.form.get("user", "")
+    with db_lock:
+        if target_user and session.get("admin", 0) in (1, 2):
+            user = users.get(User.username == target_user)
+            if user and note_id in user["note"]:
+                user["note"][note_id]["dislike"] += 1
+                users.update({"note": user["note"]}, User.username == target_user)
+        else:
+            user = users.get(User.username == session["user"])
+            if user and note_id in user["note"]:
+                user["note"][note_id]["dislike"] += 1
+                users.update({"note": user["note"]}, User.username == session["user"])
+    return "OK"
+
+#comment
+#@app.route("/comment", methods=["POST"])
+#def comment():
+
 #profile
 @app.route("/profile")
 def profile():
@@ -158,7 +198,7 @@ def newNote():
     with db_lock:
         user = users.get(User.username == session["user"])
         notes = user.get("note", {})
-        notes[id] = {"content": ""}
+        notes[id] = {"content": "", "like": 0, "dislike": 0, "comment": []}
         users.update({"note": notes}, User.username == session["user"])
     return redirect(url_for('editNote', id=id))
 
@@ -174,14 +214,14 @@ def saveNote():
             # Admin saving another user's note
             user = users.get(User.username == target_user)
             if user:
-                user["note"][id] = {"content": content}
+                user["note"][id]["content"] = content
                 users.update({"note": user["note"]}, User.username == target_user)
         else:
             # User saving their own note
             user = users.get(User.username == session["user"])
             if user:
                 notes = user.get("note", {})
-                notes[id] = {"content": content}
+                notes[id]["content"] = content
                 users.update({"note": notes}, User.username == session["user"])
 
     return "OK"
