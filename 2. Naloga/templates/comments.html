@@ -10,6 +10,9 @@
         <div id="comment">
         {% for comment in comments %}
             <p><strong>{{ comment.username }}</strong><br>{{ comment.content }}</p>
+            {% if comment.username == uporabnik %}
+            <button onclick="deleteComment({{ loop.index0 }})">ODSTRANI</button><br><br>
+            {% endif %}
         {% endfor %}
         </div>
     {% else %}
@@ -53,5 +56,16 @@
         }
         ovitek.appendChild(komentar);
         ovitek.appendChild(gumb);
+    }
+
+    function deleteComment(index) {
+        $.ajax({
+            url: "/comments/{{ id }}",
+            method: "POST",
+            data: { action: "delete", index: index },
+            success: function() {
+                location.reload();
+            }
+        });
     }
 </script>

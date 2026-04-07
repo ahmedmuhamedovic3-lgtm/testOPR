@@ -179,15 +179,19 @@ def comments(id):
     if "user" not in session:
         return redirect("/login")
     if request.method == "POST":
-        content = request.form.get("content")
-        username = session["user"]
+        action = request.form.get("action")
+        index = int(request.form.get("index", -1))
         with db_lock:
             all_users = users.all()
             for user in all_users:
                 if id in user.get("note", {}):
                     note = user["note"][id]
                     comment_list = note.get("comment", [])
-                    comment_list.append({"username": username, "content": content})
+                    if action == "delete" and 0 <= index < len(comment_list):
+                        comment_list.pop(index)
+                    else:
+                        content = request.form.get("content")
+                        comment_list.append({"username": session["user"], "content": content})
                     note["comment"] = comment_list
                     users.update({"note": user["note"]}, User.username == user["username"])
                     break
