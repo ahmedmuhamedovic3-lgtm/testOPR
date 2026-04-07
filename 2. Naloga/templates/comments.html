@@ -47,6 +47,10 @@
 
         // 3. Dodamo v #comment
         var ovitek = document.getElementById("comment");
+        // Odstranimo "Še ni komentarjev" besedilo
+        if (ovitek.childNodes.length === 1 && ovitek.childNodes[0].nodeType === 3) {
+            ovitek.innerHTML = "";
+        }
         ovitek.appendChild(komentar);
         ovitek.appendChild(gumb);
     }
