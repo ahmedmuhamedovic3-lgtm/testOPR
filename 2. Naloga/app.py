@@ -131,14 +131,19 @@ def like():
             if note_id in user.get("note", {}):
                 note = user["note"][note_id]
                 like_users = note.get("like_users", [])
+                dislike_users = note.get("dislike_users", [])
                 if username in like_users:
                     like_users.remove(username)
                 else:
                     like_users.append(username)
+                    if username in dislike_users:
+                        dislike_users.remove(username)
                 note["like"] = len(like_users)
+                note["dislike"] = len(dislike_users)
                 note["like_users"] = like_users
+                note["dislike_users"] = dislike_users
                 users.update({"note": user["note"]}, User.username == user["username"])
-                return jsonify({"like": note["like"], "active": username in like_users})
+                return jsonify({"like": note["like"], "dislike": note["dislike"], "likeActive": username in like_users, "dislikeActive": username in dislike_users})
     return "OK"
 
 #dislike
@@ -151,15 +156,20 @@ def dislike():
         for user in all_users:
             if note_id in user.get("note", {}):
                 note = user["note"][note_id]
+                like_users = note.get("like_users", [])
                 dislike_users = note.get("dislike_users", [])
                 if username in dislike_users:
                     dislike_users.remove(username)
                 else:
                     dislike_users.append(username)
+                    if username in like_users:
+                        like_users.remove(username)
+                note["like"] = len(like_users)
                 note["dislike"] = len(dislike_users)
+                note["like_users"] = like_users
                 note["dislike_users"] = dislike_users
                 users.update({"note": user["note"]}, User.username == user["username"])
-                return jsonify({"dislike": note["dislike"], "active": username in dislike_users})
+                return jsonify({"like": note["like"], "dislike": note["dislike"], "likeActive": username in like_users, "dislikeActive": username in dislike_users})
     return "OK"
 
 #comment

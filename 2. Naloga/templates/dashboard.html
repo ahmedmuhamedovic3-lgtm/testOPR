@@ -37,7 +37,9 @@
             data: {id: id},
             success: function (data) {
                 $("#lc-" + id).text(data.like);
-                $("#l-" + id).css("color", data.active ? "green" : "");
+                $("#dc-" + id).text(data.dislike);
+                $("#l-" + id).css("color", data.likeActive ? "green" : "");
+                $("#d-" + id).css("color", data.dislikeActive ? "red" : "");
             }
         });
     }
@@ -47,8 +49,10 @@
             method: "POST",
             data: {id: id},
             success: function (data) {
+                $("#lc-" + id).text(data.like);
                 $("#dc-" + id).text(data.dislike);
-                $("#d-" + id).css("color", data.active ? "red" : "");
+                $("#l-" + id).css("color", data.likeActive ? "green" : "");
+                $("#d-" + id).css("color", data.dislikeActive ? "red" : "");
             }
         });
     }
