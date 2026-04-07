@@ -115,7 +115,8 @@ def dashboard():
                 "id": note_id,
                 "content": note.get("content", ""),
                 "like": note.get("like", 0),
-                "dislike": note.get("dislike", 0)
+                "dislike": note.get("dislike", 0),
+                "comment": note.get("comment", [])
             })
     print(session, "dash")
     return render_template("dashboard.html", uporabnik = session["user"], posts = posts, admin = session.get("admin", 0))
@@ -173,8 +174,13 @@ def dislike():
     return "OK"
 
 #comment
-#@app.route("/comment", methods=["POST"])
-#def comment():
+@app.route("/comments/<id>")
+def comments():
+    if "user" not in session:
+        return redirect("/login")
+    note_id = request.form["id"]
+    comments = request.form.getlist("comments")
+    return render_template("comments.html", id=note_id, comments=comments)
 
 #profile
 @app.route("/profile")

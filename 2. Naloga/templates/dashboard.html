@@ -19,7 +19,7 @@
             <p style="white-space: pre-wrap;">{{ post.content[:50] }}{% if post.content|length > 50 %}...{% endif %}</p>
             <a href="javascript:void(0)" id="l-{{ post.id }}" onclick="like('{{ post.id }}')">👍 <span id="lc-{{ post.id }}">{{ post.like }}</span></a>
             <a href="javascript:void(0)" id="d-{{ post.id }}" onclick="dislike('{{ post.id }}')">👎 <span id="dc-{{ post.id }}">{{ post.dislike }}</span></a>
-            <a href="javascript:void(0)" onclick="comment('{{ post.id }}')">💬</a>
+            <a href="/comments/{{ post.id }}" onclick="comment('{{ post.id }}')">💬</a>
         {% endfor %}
         <br><br><br>
     {% else %}
@@ -59,8 +59,8 @@
     function comment(id) {
         $.ajax({
             url: "/comment",
-            method: "POST",
-            data: {id: id}
+            data: {id: id},
+            comments: posts.comment
         });
     }
 </script>
