@@ -58,8 +58,7 @@
     }
     function comment(id) {
         $.ajax({
-            url: "/comment",
-            method: "POST",
+            url: "/comments/" + id,
             data: {id: id},
             data: {comments: posts.comment}
         });
