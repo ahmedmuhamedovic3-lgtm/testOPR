@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, jsonify, url_for
 from tinydb import TinyDB, Query
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
@@ -110,7 +110,13 @@ def dashboard():
     posts = []
     for user in all_users:
         for note_id, note in user.get("note", {}).items():
-            posts.append({"username": user["username"], "id": note_id, "content": note.get("content", "")})
+            posts.append({
+                "username": user["username"],
+                "id": note_id,
+                "content": note.get("content", ""),
+                "like": note.get("like", 0),
+                "dislike": note.get("dislike", 0)
+            })
     print(session, "dash")
     return render_template("dashboard.html", uporabnik = session["user"], posts = posts, admin = session.get("admin", 0))
 
@@ -118,36 +124,40 @@ def dashboard():
 @app.route("/like", methods=["POST"])
 def like():
     note_id = request.form["id"]
-    target_user = request.form.get("user", "")
+    username = session["user"]
     with db_lock:
-        if target_user and session.get("admin", 0) in (1, 2):
-            user = users.get(User.username == target_user)
-            if user and note_id in user["note"]:
-                user["note"][note_id]["like"] += 1
-                users.update({"note": user["note"]}, User.username == target_user)
-        else:
-            user = users.get(User.username == session["user"])
-            if user and note_id in user["note"]:
-                user["note"][note_id]["like"] += 1
-                users.update({"note": user["note"]}, User.username == session["user"])
+        user = users.get(User.username == username)
+        if user and note_id in user["note"]:
+            note = user["note"][note_id]
+            like_users = note.get("like_users", [])
+            if username in like_users:
+                like_users.remove(username)
+            else:
+                like_users.append(username)
+            note["like"] = len(like_users)
+            note["like_users"] = like_users
+            users.update({"note": user["note"]}, User.username == username)
+            return jsonify({"like": note["like"], "active": username in like_users})
     return "OK"
 
 #dislike
 @app.route("/dislike", methods=["POST"])
 def dislike():
     note_id = request.form["id"]
-    target_user = request.form.get("user", "")
+    username = session["user"]
     with db_lock:
-        if target_user and session.get("admin", 0) in (1, 2):
-            user = users.get(User.username == target_user)
-            if user and note_id in user["note"]:
-                user["note"][note_id]["dislike"] += 1
-                users.update({"note": user["note"]}, User.username == target_user)
-        else:
-            user = users.get(User.username == session["user"])
-            if user and note_id in user["note"]:
-                user["note"][note_id]["dislike"] += 1
-                users.update({"note": user["note"]}, User.username == session["user"])
+        user = users.get(User.username == username)
+        if user and note_id in user["note"]:
+            note = user["note"][note_id]
+            dislike_users = note.get("dislike_users", [])
+            if username in dislike_users:
+                dislike_users.remove(username)
+            else:
+                dislike_users.append(username)
+            note["dislike"] = len(dislike_users)
+            note["dislike_users"] = dislike_users
+            users.update({"note": user["note"]}, User.username == username)
+            return jsonify({"dislike": note["dislike"], "active": username in dislike_users})
     return "OK"
 
 #comment

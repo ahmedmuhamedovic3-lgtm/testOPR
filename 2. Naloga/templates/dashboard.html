@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <title>Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
     <h1>Note dashboard</h1>
@@ -14,8 +17,8 @@
         {% for post in posts %}
             <p><strong>{{ post.username }}</strong></p>
             <p style="white-space: pre-wrap;">{{ post.content[:50] }}{% if post.content|length > 50 %}...{% endif %}</p>
-            <a href="javascript:void(0)" onclick="like('{{ post.id }}')">👍</a>
-            <a href="javascript:void(0)" onclick="dislike('{{ post.id }}')">👎</a>
+            <a href="javascript:void(0)" id="l-{{ post.id }}" onclick="like('{{ post.id }}')">👍 <span id="lc-{{ post.id }}">{{ post.like }}</span></a>
+            <a href="javascript:void(0)" id="d-{{ post.id }}" onclick="dislike('{{ post.id }}')">👎 <span id="dc-{{ post.id }}">{{ post.dislike }}</span></a>
             <a href="javascript:void(0)" onclick="comment('{{ post.id }}')">💬</a>
         {% endfor %}
         <br><br><br>
@@ -31,11 +34,10 @@
         $.ajax({
             url: "/like",
             method: "POST",
-            data: {
-                id: id
-            },
-            success: function (result) {
-                // Handle like response if needed
+            data: {id: id},
+            success: function (data) {
+                $("#lc-" + id).text(data.like);
+                $("#l-" + id).css("color", data.active ? "green" : "");
             }
         });
     }
@@ -43,11 +45,10 @@
         $.ajax({
             url: "/dislike",
             method: "POST",
-            data: {
-                id: id
-            },
-            success: function (result) {
-                // Handle dislike response if needed
+            data: {id: id},
+            success: function (data) {
+                $("#dc-" + id).text(data.dislike);
+                $("#d-" + id).css("color", data.active ? "red" : "");
             }
         });
     }
@@ -55,12 +56,7 @@
         $.ajax({
             url: "/comment",
             method: "POST",
-            data: {
-                id: id
-            },
-            success: function (result) {
-                // Handle comment response if needed
-            }
+            data: {id: id}
         });
     }
 </script>
