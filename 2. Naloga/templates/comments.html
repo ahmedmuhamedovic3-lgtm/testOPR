@@ -5,15 +5,51 @@
 </head>
 <body>
     <h1>Komentarji</h1>
+    <button onclick="newComment()">Dodaj komentar</button><br><br>
     {% if comments %}
         {% for comment in comments %}
             <p><strong>{{ comment.username }}</strong></p>
             <p style="white-space: pre-wrap;">{{ comment.content }}</p>
         {% endfor %}
     {% else %}
-        <p>Še ni komentarjev.</p>
+        <div id="comment">Še ni komentarjev.</div><br>
     {% endif %}
     <a href="/dashboard">NAZAJ</a><br>
     <a href="/logout">ODJAVI SE</a>
 </body>
 </html>
+
+<script>
+    function newComment() {
+        // 1. Ustvarimo nov element textarea
+        var komentar = document.createElement("textarea");
+        
+        // 2. Nastavimo mu poljubne lastnosti (neobvezno)
+        komentar.style.display = "block"; // Vsak v svojo vrsto
+
+        // 3. Ustvarimo gumb (npr. za potrditev ali brisanje)
+        var gumb = document.createElement("button");
+        gumb.innerHTML = "POŠLJI";
+
+        // Funkcija, ki se sproži ob kliku na gumb
+        gumb.onclick = function() {
+            // 1. Ustvarimo <p> element
+            var paragraf = document.createElement("p");
+        
+            // 2. Vanj skopiramo besedilo iz textarea
+            paragraf.innerText = komentar.value;
+        
+            // 3. Zamenjamo textarea s tem novim paragrafom
+            ovitek.replaceChild(paragraf, komentar);
+        
+            // 4. Odstranimo gumb, ker ga ne potrebujemo več
+            gumb.remove();
+        };
+
+        // 4. Vse skupaj zložimo: textarea in gumb v ovitek, ovitek pa na stran
+        komentar.appendChild(komentar);
+        komentar.appendChild(gumb);
+        
+        document.getElementById("comment").appendChild(komentar);
+    }
+</script>
