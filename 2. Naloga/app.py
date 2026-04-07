@@ -126,18 +126,19 @@ def like():
     note_id = request.form["id"]
     username = session["user"]
     with db_lock:
-        user = users.get(User.username == username)
-        if user and note_id in user["note"]:
-            note = user["note"][note_id]
-            like_users = note.get("like_users", [])
-            if username in like_users:
-                like_users.remove(username)
-            else:
-                like_users.append(username)
-            note["like"] = len(like_users)
-            note["like_users"] = like_users
-            users.update({"note": user["note"]}, User.username == username)
-            return jsonify({"like": note["like"], "active": username in like_users})
+        all_users = users.all()
+        for user in all_users:
+            if note_id in user.get("note", {}):
+                note = user["note"][note_id]
+                like_users = note.get("like_users", [])
+                if username in like_users:
+                    like_users.remove(username)
+                else:
+                    like_users.append(username)
+                note["like"] = len(like_users)
+                note["like_users"] = like_users
+                users.update({"note": user["note"]}, User.username == user["username"])
+                return jsonify({"like": note["like"], "active": username in like_users})
     return "OK"
 
 #dislike
@@ -146,18 +147,19 @@ def dislike():
     note_id = request.form["id"]
     username = session["user"]
     with db_lock:
-        user = users.get(User.username == username)
-        if user and note_id in user["note"]:
-            note = user["note"][note_id]
-            dislike_users = note.get("dislike_users", [])
-            if username in dislike_users:
-                dislike_users.remove(username)
-            else:
-                dislike_users.append(username)
-            note["dislike"] = len(dislike_users)
-            note["dislike_users"] = dislike_users
-            users.update({"note": user["note"]}, User.username == username)
-            return jsonify({"dislike": note["dislike"], "active": username in dislike_users})
+        all_users = users.all()
+        for user in all_users:
+            if note_id in user.get("note", {}):
+                note = user["note"][note_id]
+                dislike_users = note.get("dislike_users", [])
+                if username in dislike_users:
+                    dislike_users.remove(username)
+                else:
+                    dislike_users.append(username)
+                note["dislike"] = len(dislike_users)
+                note["dislike_users"] = dislike_users
+                users.update({"note": user["note"]}, User.username == user["username"])
+                return jsonify({"dislike": note["dislike"], "active": username in dislike_users})
     return "OK"
 
 #comment
