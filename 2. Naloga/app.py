@@ -174,14 +174,18 @@ def dislike():
     return "OK"
 
 #comment
-@app.route("/comments/<id>", methods=["GET"])
-def comments():
+@app.route("/comments/<id>")
+def comments(id):
     if "user" not in session:
         return redirect("/login")
-    note_id = request.args.get("id")
-    comments = request.args.get("comments")
-    return render_template("comments.html", id=note_id, comments=comments)
-    
+    all_users = users.all()
+    comments_list = []
+    for user in all_users:
+        if id in user.get("note", {}):
+            for c in user["note"][id].get("comment", []):
+                comments_list.append(c)
+            break
+    return render_template("comments.html", id=id, comments=comments_list)
 #profile
 @app.route("/profile")
 def profile():
