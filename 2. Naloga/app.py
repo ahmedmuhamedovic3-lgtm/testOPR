@@ -174,7 +174,7 @@ def dislike():
     return "OK"
 
 #comment
-@app.route("/comments/<id>")
+@app.route("/comments/<id>", methods=["GET"])
 def comments():
     if "user" not in session:
         return redirect("/login")

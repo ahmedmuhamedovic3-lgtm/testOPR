@@ -59,6 +59,7 @@
     function comment(id) {
         $.ajax({
             url: "/comments/" + id,
+            method: "GET",
             data: {id: id},
             data: {comments: posts.comment}
         });
