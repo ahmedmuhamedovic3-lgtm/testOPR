@@ -351,4 +351,4 @@ def change_password():
         return redirect("/dashboard")
     return render_template("change_password.html")
 
-app.run(debug = True)
+app.run(debug = True) #test
