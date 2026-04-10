@@ -7,7 +7,7 @@ import os
 app = Flask(__name__, template_folder="templates3", static_folder="static3")
 
 # SQLAlchemy konfiguracija
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///history3.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///./db3.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "skrivnostniKljucZa3Nalogo"
 
