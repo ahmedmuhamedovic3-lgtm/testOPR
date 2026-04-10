@@ -14,15 +14,28 @@
     <a href="/admin">Nazaj na nadzorno ploščo</a>
     <br><br>
 
-    {% if notes %}
-    <h2>Zapiski:</h2>
-    <ul>
-        {% for id, note in notes.items() %}
-        <li><strong><a href="/dashboard/{{ id }}?user={{ target_user }}">{{ note.title }}</a></strong></li>
-        {% endfor %}
-    </ul>
+    {% if posts %}
+    <h2>Objave uporabnika {{ target_user }}:</h2>
+    {% for post in posts %}
+    <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0; background: #f9f9f9;">
+        <p><strong>Vsebina:</strong> {{ post.content if post.content else "<brez vsebine>" }}</p>
+        
+        {% if post.images %}
+        <div style="margin: 10px 0;">
+            <strong>Slike:</strong><br>
+            {% for img in post.images %}
+            <img src="/uploads/{{ img }}" style="max-width: 200px; margin: 5px;" alt="Slika">
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <p>👍 {{ post.like }} | 👎 {{ post.dislike }} | 💬 {{ post.comment | length }} komentarjev</p>
+        
+        <a href="/dashboard/{{ post.id }}?user={{ target_user }}">Uredi objavo</a>
+    </div>
+    {% endfor %}
     {% else %}
-    <p><strong>{{ target_user }} nima nobenih zapiskov</strong></p>
+    <p><strong>{{ target_user }} nima nobenih objav</strong></p>
     {% endif %}
 
     {% if admin == 2 %}

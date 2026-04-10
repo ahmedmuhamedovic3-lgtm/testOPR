@@ -106,8 +106,20 @@ def admin_user_notes(username):
     user = users.get(User.username == username)
     if not user:
         return "Uporabnik ne obstaja", 404
-    notes = user.get("note", {})
-    return render_template("admin_user_notes.html", uporabnik=session["user"], target_user=username, notes=notes, admin=session.get("admin", 0), target_admin=user.get("admin", 0))
+    
+    # Pripravi vse objave uporabnika
+    posts = []
+    for note_id, note in user.get("note", {}).items():
+        posts.append({
+            "id": note_id,
+            "content": note.get("content", ""),
+            "images": note.get("images", []),
+            "like": note.get("like", 0),
+            "dislike": note.get("dislike", 0),
+            "comment": note.get("comment", [])
+        })
+    
+    return render_template("admin_user_notes.html", uporabnik=session["user"], target_user=username, posts=posts, admin=session.get("admin", 0), target_admin=user.get("admin", 0))
 
 @app.route("/admin/updateRole", methods=["POST"])
 def update_user_role():
