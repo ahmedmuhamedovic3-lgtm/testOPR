@@ -39,7 +39,7 @@
         // Funkcija ob kliku na gumb
         gumb.onclick = function() {
             var paragraf = document.createElement("p");
-            paragraf.innerHTML = "<strong>{{ uporabnik }}</strong><br>" + komentar.value;
+            paragraf.innerHTML = "<strong>{{ uporabnik }}</strong><br>" + komentar.value + "<br><em>(shranjevanje...)</em><br><br>";
             document.getElementById("comment").replaceChild(paragraf, komentar);
             gumb.remove();
 
@@ -49,7 +49,8 @@
                 method: "POST",
                 data: { content: komentar.value },
                 success: function(response) {
-                    console.log("Komentar shranjen:", response);
+                    // Ponovno naložimo za pravilne indekse in gumb ODSTRANI
+                    location.reload();
                 },
                 error: function(xhr) {
                     console.error("Napaka pri shranjevanju komentarja:", xhr.responseText);
