@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <h1>Dogodki skozi čas</h1>
+    Ta stran je namenjena prikazu dogodkov skozi čas. Tukaj lahko vidite pomembne trenutke, ki so se zgodili skozi zgodovino.<br><br>
+    <strong>Izberite dan:</strong>
+    <form method="get" action="/home">
+        <input type="date" name="date" value="{{ date }}">
+        <button type="submit">Prikaži dogodke</button><br>
+        Ali pa izberite današnji dan:
+        <button type="submit" name="date" value="{{ today }}">Današnji dan</button>
+    </form>
+
+</body>
+</html>

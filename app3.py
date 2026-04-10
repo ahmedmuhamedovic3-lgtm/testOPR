@@ -28,6 +28,26 @@ def get_client_ip():
 # ROUTE - dodaj nove route tukaj
 # =====================================================
 
+#/ - domača stran
+@app.route("/")
+def home():
+    if request.headers.get('X-Forwarded-For'): 
+        ip = request.headers.get('X-Forwarded-For').split(',')[0] 
+    else:
+        ip = request.remote_addr
+
+    odgovor = requests.get(f"https://free.freeipapi.com/api/json/{ip}")
+    data = odgovor.json()
+    kraj = data["cityName"]
+    lat = data["latitude"]
+    lon = data["longitude"]
+    return render_template("home.html", kraj=kraj, lat=lat, lon=lon)
+
+#/date/<month>/<day> - dogodki za določen datum
+@app.route("/date/<month>/<day>")
+def date(month, day):
+    # Tukaj boste implementirali logiko za prikaz dogodkov za določen datum
+    pass
 
 # =====================================================
 # MAIN
