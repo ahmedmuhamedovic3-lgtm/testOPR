@@ -47,8 +47,13 @@ def home():
 @app.route("/date/<month>/<day>")
 def date(month, day):
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
-    data = odgovor.json()
-    dogodki = data["events"]
+    if odgovor.status_code != 200:
+        return f"Napaka: API je vrnil status {odgovor.status_code}", 404
+    try:
+        data = odgovor.json()
+        dogodki = data.get("events", [])
+    except requests.exceptions.JSONDecodeError:
+        return "Napaka: API ni vrnil veljavnega JSON-a", 500
     return render_template("date.html", month=month, day=day, dogodki=dogodki)
 
 # =====================================================
