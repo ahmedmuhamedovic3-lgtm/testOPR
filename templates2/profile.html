@@ -19,14 +19,15 @@
     <br>
     {% if posts %}
         <h2>Vaše objave:</h2>
-        {% for id, post in posts.items() %}
+        {% for post in posts %}
+            <p><strong>{{ post.username }}</strong></p>
             <p style="white-space: pre-wrap;">{{ post.content[:50] }}{% if post.content|length > 50 %}...{% endif %}</p>
-            <a href="/dashboard/{{ id }}"><button type="button">UREDI</button></a>
             {% if post.images %}
                 {% for img in post.images %}
                     <img src="/uploads/{{ img }}" height="150" style="margin: 5px;">
                 {% endfor %}
             {% endif %}
+            <a href="/dashboard/{{ post.id }}"><button type="button">UREDI</button></a>
         {% endfor %}
     {% else %}
         <p>Še ni objav. Ustvarite prvo objavo!</p>
@@ -48,15 +49,7 @@
 
 <script>
     function newNote() {
-        $.ajax({
-            url: "/newNote",
-            method: "POST",
-            data: {
-                notes: notes
-            },
-            success: function (result) {
-                $("#weather-temp").html("<strong>" + result + "</strong> degrees");
-            }
-        });
+        // /newNote je GET route ki ustvari novo beležko in nas preusmeri na urejanje
+        window.location.href = "/newNote";
     }
 </script>
