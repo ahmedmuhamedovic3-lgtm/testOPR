@@ -16,6 +16,36 @@ db = SQLAlchemy(app)
 
 
 # =====================================================
+# MODELI
+# =====================================================
+
+class Favourite(db.Model):
+    """Priljubljeni dogodki"""
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(50), nullable=False)
+    event_id = db.Column(db.String(100), nullable=False)
+    event_data = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Note(db.Model):
+    """Beležke uporabnikov"""
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(50), nullable=False)
+    event_id = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class History(db.Model):
+    """Zgodovina ogledov"""
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(50), nullable=False)
+    date_viewed = db.Column(db.String(20), nullable=False)
+    viewed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# =====================================================
 # HELPER FUNKCIJE
 # =====================================================
 
@@ -31,8 +61,12 @@ def get_client_ip():
 #/ - domača stran
 @app.route("/")
 def home():
-    if request.headers.get('X-Forwarded-For'): 
-        ip = request.headers.get('X-Forwarded-For').split(',')[0] 
+    # Ustvari bazo če še ne obstaja
+    with app.app_context():
+        db.create_all()
+    
+    if request.headers.get('X-Forwarded-For'):
+        ip = request.headers.get('X-Forwarded-For').split(',')[0]
     else:
         ip = request.remote_addr
 
