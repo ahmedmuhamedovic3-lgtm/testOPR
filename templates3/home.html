@@ -20,9 +20,8 @@
 <script>
 function parseDate(dateStr) {
     var date = new Date(dateStr);
-    var months = ["january", "february", "march", "april", "may", "june",
-                  "july", "august", "september", "october", "november", "december"];
-    var month = months[date.getMonth()];
+    // byabbe.se API uporablja številčne mesece (1-12)
+    var month = date.getMonth() + 1; // getMonth() vrne 0-11
     var day = date.getDate();
     return { month: month, day: day };
 }
