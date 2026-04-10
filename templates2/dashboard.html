@@ -17,6 +17,11 @@
         {% for post in posts %}
             <p><strong>{{ post.username }}</strong></p>
             <p style="white-space: pre-wrap;">{{ post.content[:50] }}{% if post.content|length > 50 %}...{% endif %}</p>
+            {% if post.images %}
+                {% for img in post.images %}
+                    <img src="/uploads/{{ img }}" height="150" style="margin: 5px;">
+                {% endfor %}
+            {% endif %}
             <a href="javascript:void(0)" id="l-{{ post.id }}" onclick="like('{{ post.id }}')">👍 <span id="lc-{{ post.id }}">{{ post.like }}</span></a>
             <a href="javascript:void(0)" id="d-{{ post.id }}" onclick="dislike('{{ post.id }}')">👎 <span id="dc-{{ post.id }}">{{ post.dislike }}</span></a>
             <a href="/comments/{{ post.id }}" onclick="comment('{{ post.id }}', '{{ post.comment }}')">💬</a>

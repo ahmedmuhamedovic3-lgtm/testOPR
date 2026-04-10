@@ -1,11 +1,25 @@
-from flask import Flask, render_template, request, redirect, session, jsonify, url_for
+from flask import Flask, render_template, request, redirect, session, jsonify, url_for, send_from_directory
 from tinydb import TinyDB, Query
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import uuid
 import threading
+import os
 
 app = Flask(__name__, template_folder="templates2")
 app.secret_key = "skrivamoTaKljuč"
+
+# Upload konfiguracija
+UPLOAD_FOLDER = "uploads2"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB max
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+
+# Ustvari uploads folder če ne obstaja
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 db = TinyDB("db2.json")
 all_data = db.all()
@@ -14,6 +28,11 @@ users = db.table("users")
 db_lock = threading.Lock()
 
 User = Query()
+
+# Route za serviranje uploadanih slik
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 #home
 @app.route("/")
@@ -114,6 +133,7 @@ def dashboard():
                 "username": user["username"],
                 "id": note_id,
                 "content": note.get("content", ""),
+                "images": note.get("images", []),
                 "like": note.get("like", 0),
                 "dislike": note.get("dislike", 0),
                 "comment": note.get("comment", [])
@@ -253,7 +273,7 @@ def newNote():
     with db_lock:
         user = users.get(User.username == session["user"])
         notes = user.get("note", {})
-        notes[id] = {"content": "", "like": 0, "dislike": 0, "comment": []}
+        notes[id] = {"content": "", "images": [], "like": 0, "dislike": 0, "comment": []}
         users.update({"note": notes}, User.username == session["user"])
     return redirect(url_for('editNote', id=id))
 
@@ -277,6 +297,20 @@ def saveNote():
             if user:
                 notes = user.get("note", {})
                 notes[id]["content"] = content
+                
+                # Shrani uploadane slike
+                files = request.files.getlist("images")
+                images = notes[id].get("images", [])
+                for file in files:
+                    if file and file.filename != "" and allowed_file(file.filename):
+                        # Generiraj unikatno ime za sliko
+                        ext = file.filename.rsplit(".", 1)[1].lower()
+                        unique_filename = f"{uuid.uuid4().hex}.{ext}"
+                        file.save(os.path.join(app.config["UPLOAD_FOLDER"], unique_filename))
+                        images.append(unique_filename)
+                
+                # Omeji na 3 slike
+                notes[id]["images"] = images[:3]
                 users.update({"note": notes}, User.username == session["user"])
 
     return "OK"

@@ -14,6 +14,18 @@
     <br>
     <form action="/dashboard" method="post">
         <textarea id="note" cols="30" rows="10">{{ note.content | default('') }}</textarea>
+        <br><br>
+        <label><strong>Slike (največ 3):</strong></label><br>
+        {% if note.images %}
+            <div id="current-images">
+                <p>Trenutne slike:</p>
+                {% for img in note.images %}
+                    <img src="/uploads/{{ img }}" height="100" style="margin: 5px;">
+                {% endfor %}
+            </div>
+        {% endif %}
+        <input type="file" id="imageUpload" name="images" accept="image/*" multiple>
+        <p id="imageCount" style="color: gray;"></p>
         <br>
         <button onclick="saveNote()" type="button">SHRANI</button><br>
         <button onclick="back()" type="button">NAZAJ</button><br>
@@ -27,46 +39,120 @@
 </html>
 
 <script>
+    // =====================================================
+    // Spremenljivke, ki jih nastavimo s pomočjo Jinja2
+    // =====================================================
+    
+    // ID trenutne beležke (UUID) - npr. "a1b2c3d4-..."
     const id = "{{ id }}";
+    
+    // Če admin ureja beležko drugega uporabnika, je tu targetUser
+    // Sicer je prazno (""), kar pomeni da ureja svojo beležko
     const targetUser = "{{ target_user or '' }}";
+
+    // =====================================================
+    // Sprememba: upload slik
+    // =====================================================
+    
+    // Ko uporabnik izbere datoteke, prikažemo info o številu slik
+    document.getElementById("imageUpload").onchange = function() {
+        // Število novo izbranih slik
+        var count = this.files.length;
+        
+        // Število že obstoječih slik v beležki (iz baze)
+        var existing = {{ note.images | default([]) | length }};
+        
+        // Skupno število (stare + nove)
+        var total = count + existing;
+        
+        // Sestavimo sporočilo za uporabnika
+        var msg = "Izbranih: " + count + " slik";
+        if (existing > 0) {
+            msg += " | Obstoječih: " + existing;
+        }
+        msg += " | Skupaj: " + total;
+        
+        // Če je več kot 3, prikažemo opozorilo (backend bo shranil samo prve 3)
+        if (total > 3) {
+            msg += " ⚠️ (PREVEČ! Shranjene bodo samo prve 3)";
+        }
+        
+        // Prikažemo sporočilo pod inputom
+        document.getElementById("imageCount").innerHTML = msg;
+    };
+
+    // =====================================================
+    // SHRANI beležko (vključno s slikami)
+    // =====================================================
     function saveNote() {
-        var noteText = document.getElementById("note").value
+        // 1. Preberemo besedilo iz textarea-ja
+        var noteText = document.getElementById("note").value;
+        
+        // 2. Preberemo izbrane datoteke iz file inputa
+        var fileInput = document.getElementById("imageUpload");
+        
+        // 3. Ustvarimo FormData objekt
+        //    - To potrebimo ker pošiljamo datoteke (ne moremo z navadnim JSON)
+        //    - FormData omogoča multipart/form-data POST request
+        var formData = new FormData();
+        formData.append("content", noteText);   // besedilo beležke
+        formData.append("id", id);              // ID beležke
+        formData.append("user", targetUser);    // če admin ureja za drugega
+        
+        // 4. Dodamo vse izbrane slike v FormData
+        //    - Vsaka datoteka dobi ime "images" (backend jih prebere z getlist("images"))
+        for (var i = 0; i < fileInput.files.length; i++) {
+            formData.append("images", fileInput.files[i]);
+        }
+        
+        // 5. Pošljemo AJAX POST request na /saveNote
         $.ajax({
             url: "/saveNote",
             method: "POST",
-            data: {
-                content: noteText,
-                id: id,
-                user: targetUser
-            },
+            data: formData,           // FormData objekt z besedilom in slikami
+            processData: false,       // jQuery NE sme procesirati podatkov (ker so datoteke)
+            contentType: false,       // jQuery NE sme nastaviti Content-Type (FormData sam nastavi multipart/form-data)
             success: function (result) {
-                // Redirect based on whether this is admin viewing another user's notes
+                // Če je shranjevanje uspešno, nas preusmeri
                 if (targetUser) {
+                    // Admin je urejal beležko drugega uporabnika -> nazaj na admin stran
                     window.location.href = "/admin/user/" + targetUser;
                 } else {
+                    // Uporabnik je urejal svojo beležko -> nazaj na profil
                     window.location.href = "/profile";
                 }
             }
         });
     }
+
+    // =====================================================
+    // NAZAJ (brez shranjevanja)
+    // =====================================================
     function back() {
-        // Redirect based on whether this is admin viewing another user's notes
+        // Preveri če admin ureja beležko drugega uporabnika
         if (targetUser) {
+            // Nazaj na admin stran tega uporabnika
             window.location.href = "/admin/user/" + targetUser;
         } else {
+            // Nazaj na svoj profil
             window.location.href = "/profile";
         }
     }
+
+    // =====================================================
+    // IZBRIŠI beležko
+    // =====================================================
     function deleteNote() {
+        // Pošljemo AJAX POST request na /deleteNote
         $.ajax({
             url: "/deleteNote",
             method: "POST",
             data: {
-                id: id,
-                user: targetUser
+                id: id,               // ID beležke za brisanje
+                user: targetUser      // Če admin briše beležko drugega uporabnika
             },
             success: function (result) {
-                // Redirect based on whether this is admin viewing another user's notes
+                // Po uspešnem brisanju nas preusmeri
                 if (targetUser) {
                     window.location.href = "/admin/user/" + targetUser;
                 } else {
