@@ -49,12 +49,12 @@ def home():
 def date(month, day):
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
     data = odgovor.json()
-    dogodki = data.get("events", [])
+    events = data.get("events", [])
     meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij', 
               'julij', 'avgust', 'september', 'oktober', 'november', 'december']
     monthName = meseci[int(month)]
-    print(dogodki)
-    return render_template("events.html", month=monthName, day=day, dogodki=dogodki)
+    print(events)
+    return render_template("events.html", month=monthName, day=day, events=events)
 
 # =====================================================
 # MAIN

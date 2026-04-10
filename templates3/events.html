@@ -5,12 +5,12 @@
 </head>
 <body>
     <h1>Dogodki za dan {{ day }}. {{ month }}</h1>
-    {% if dogodki %}
+    {% if events %}
         <ul>
-        {% for dogodek in dogodki %}
-            <li>{{ dogodek.year }}: {{ dogodek.description }}
-            {% if dogodek.wikipedia %}
-                <a href="{{ dogodek.wikipedia }}" target="_blank">[Wikipedia]</a>
+        {% for event in events %}
+            <li>{{ event.year }}: {{ event.description }}
+            {% if event.wikipedia %}
+                <a href="{{ event.wikipedia }}" target="_blank">[Wikipedia]</a>
             {% endif %}
             </li><br>
         {% endfor %}
