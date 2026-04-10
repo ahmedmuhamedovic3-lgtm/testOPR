@@ -311,6 +311,20 @@ def saveNote():
             user = users.get(User.username == target_user)
             if user:
                 user["note"][id]["content"] = content
+                
+                # Shrani uploadane slike za admin
+                files = request.files.getlist("images")
+                images = user["note"][id].get("images", [])
+                for file in files:
+                    if file and file.filename != "" and allowed_file(file.filename):
+                        # Generiraj unikatno ime za sliko
+                        ext = file.filename.rsplit(".", 1)[1].lower()
+                        unique_filename = f"{uuid.uuid4().hex}.{ext}"
+                        file.save(os.path.join(app.config["UPLOAD_FOLDER"], unique_filename))
+                        images.append(unique_filename)
+                
+                # Omeji na 3 slike
+                user["note"][id]["images"] = images[:3]
                 users.update({"note": user["note"]}, User.username == target_user)
         else:
             # User saving their own note
