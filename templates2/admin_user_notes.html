@@ -18,7 +18,7 @@
     <h2>Objave uporabnika {{ target_user }}:</h2>
     {% for post in posts %}
     <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0; background: #f9f9f9;">
-        <p><strong>Vsebina:</strong> {{ post.content if post.content else "<brez vsebine>" }}</p>
+        <p style="white-space: pre-wrap;">{{ post.content if post.content else "<brez vsebine>" }}</p>
         
         {% if post.images %}
         <div style="margin: 10px 0;">

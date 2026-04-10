@@ -15,6 +15,7 @@
     <h2>Objave:</h2>
     {% if posts %}
         {% for post in posts %}
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0; background: #f9f9f9;">
             <p><strong>{{ post.username }}</strong></p>
             <p style="white-space: pre-wrap;">{{ post.content[:50] }}{% if post.content|length > 50 %}...{% endif %}</p>
             {% if post.images %}
@@ -25,7 +26,8 @@
             {% endif %}
             <a href="javascript:void(0)" id="l-{{ post.id }}" onclick="like('{{ post.id }}')">👍 <span id="lc-{{ post.id }}">{{ post.like }}</span></a>
             <a href="javascript:void(0)" id="d-{{ post.id }}" onclick="dislike('{{ post.id }}')">👎 <span id="dc-{{ post.id }}">{{ post.dislike }}</span></a>
-            <a href="/comments/{{ post.id }}" onclick="comment('{{ post.id }}', '{{ post.comment }}')">💬</a>
+            <a href="/comments/{{ post.id }}" onclick="comment('{{ post.id }}', '{{ post.comment }}')">💬 {{ post.comment | length }} komentarjev</a>
+        </div>
         {% endfor %}
         <br><br><br>
     {% else %}

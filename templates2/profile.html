@@ -20,6 +20,7 @@
     {% if posts %}
         <h2>Vaše objave:</h2>
         {% for post in posts %}
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0; background: #f9f9f9;">
             <p><strong>{{ post.username }}</strong></p>
             <p style="white-space: pre-wrap;">{{ post.content[:50] }}{% if post.content|length > 50 %}...{% endif %}</p>
             {% if post.images %}
@@ -29,6 +30,7 @@
                 <br>
             {% endif %}
             <a href="/dashboard/{{ post.id }}"><button type="button">UREDI</button></a>
+        </div>
         {% endfor %}
     {% else %}
         <p>Še ni objav. Ustvarite prvo objavo!</p>
