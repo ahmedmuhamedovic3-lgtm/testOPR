@@ -26,6 +26,7 @@
                 {% for img in post.images %}
                     <img src="/uploads/{{ img }}" height="150" style="margin: 5px;">
                 {% endfor %}
+                <br>
             {% endif %}
             <a href="/dashboard/{{ post.id }}"><button type="button">UREDI</button></a>
         {% endfor %}
