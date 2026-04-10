@@ -235,11 +235,21 @@ def profile():
     if "user" not in session:
         return redirect("/login")
     print("all users:", get_all_users())
-    user = users.get(User.username == session["user"])
-    notes = user["note"]
-    #print(notes)
+    all_users = get_all_users()
+    posts = []
+    for user in all_users:
+        for note_id, note in user.get("note", {}).items():
+            posts.append({
+                "username": user["username"],
+                "id": note_id,
+                "content": note.get("content", ""),
+                "images": note.get("images", []),
+                "like": note.get("like", 0),
+                "dislike": note.get("dislike", 0),
+                "comment": note.get("comment", [])
+            })
     print(session, "dash")
-    return render_template("profile.html", uporabnik = session["user"], notes = notes, admin = session.get("admin", 0))
+    return render_template("profile.html", uporabnik = session["user"], posts = posts, admin = session.get("admin", 0))
 
 def get_all_users():
     return users.all()
