@@ -347,6 +347,44 @@ def deleteNote():
 
     return "OK"
 
+#remove_image - odstrani posamezno sliko iz beležke
+@app.route("/removeImage", methods=["POST"])
+def removeImage():
+    note_id = request.form["id"]
+    filename = request.form["filename"]
+    target_user = request.form.get("user", "")
+
+    with db_lock:
+        if target_user and session.get("admin", 0) in (1, 2):
+            # Admin odstranjuje sliko drugega uporabnika
+            user = users.get(User.username == target_user)
+            if user and note_id in user["note"]:
+                images = user["note"][note_id].get("images", [])
+                if filename in images:
+                    images.remove(filename)
+                    # Izbriši datoteko iz uploads folderja
+                    image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+                    if os.path.exists(image_path):
+                        os.remove(image_path)
+                user["note"][note_id]["images"] = images
+                users.update({"note": user["note"]}, User.username == target_user)
+                return "OK"
+        else:
+            # Uporabnik odstranjuje svojo sliko
+            user = users.get(User.username == session["user"])
+            if user and note_id in user["note"]:
+                images = user["note"][note_id].get("images", [])
+                if filename in images:
+                    images.remove(filename)
+                    # Izbriši datoteko iz uploads folderja
+                    image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+                    if os.path.exists(image_path):
+                        os.remove(image_path)
+                user["note"][note_id]["images"] = images
+                users.update({"note": user["note"]}, User.username == session["user"])
+                return "OK"
+    return "Slika ne obstaja", 404
+
 #logout
 @app.route("/logout")
 def logout():
