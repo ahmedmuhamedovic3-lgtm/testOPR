@@ -4,11 +4,11 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Dogodki za dan {{ day }}. {{ month }}</h1>
+    <h1>Dogodki na dan {{ day }}. {{ month }}</h1>
     {% if events %}
         <ul>
         {% for event in events %}
-            <li>{{ event.year }}: {{ event.description }}
+            <li><strong>{{ event.year }}:</strong> {{ event.description }}
             {% if event.wikipedia %}
                 <br>
                 <strong>Wikipedia povezave:</strong>

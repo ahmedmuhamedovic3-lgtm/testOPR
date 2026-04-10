@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
 import os
-import calendar
 
 app = Flask(__name__, template_folder="templates3", static_folder="static3")
 
@@ -45,7 +44,7 @@ def home():
     return render_template("home.html", kraj=kraj, lat=lat, lon=lon)
 
 #/date/<month>/<day> - dogodki za določen datum
-@app.route("/date/<month>/<day>")
+@app.route("/events/<month>/<day>")
 def date(month, day):
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
     data = odgovor.json()
@@ -53,7 +52,6 @@ def date(month, day):
     meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij', 
               'julij', 'avgust', 'september', 'oktober', 'november', 'december']
     monthName = meseci[int(month)]
-    print(events)
     return render_template("events.html", month=monthName, day=day, events=events)
 
 # =====================================================

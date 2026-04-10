@@ -7,7 +7,7 @@
     <h1>Dogodki skozi čas</h1>
     Ta stran je namenjena prikazu dogodkov skozi čas. Tukaj lahko vidite pomembne trenutke, ki so se zgodili skozi zgodovino.<br><br>
     <strong>Izberite dan:</strong>
-    <form method="get" action="/today">
+    <form method="get" action="/events">
         <input type="date" name="date" id="dateInput" value="{{ date }}">
         <button type="button" onclick="goToDate()">Prikaži dogodke</button><br>
         Ali pa izberite današnji dan:
@@ -33,13 +33,13 @@ function goToDate() {
         return;
     }
     var parsed = parseDate(dateInput);
-    window.location.href = "/date/" + parsed.month + "/" + parsed.day;
+    window.location.href = "/events/" + parsed.month + "/" + parsed.day;
 }
 
 function goToToday() {
     var today = new Date();
     var dateStr = today.toISOString().split("T")[0];
     var parsed = parseDate(dateStr);
-    window.location.href = "/date/" + parsed.month + "/" + parsed.day;
+    window.location.href = "/events/" + parsed.month + "/" + parsed.day;
 }
 </script>
