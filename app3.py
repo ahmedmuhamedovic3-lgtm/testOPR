@@ -45,9 +45,7 @@ def home():
 
 #/date/<month>/<day> - dogodki za določen datum
 @app.route("/date/<month>/<day>")
-def date():
-    month = request.view_args["month"]
-    day = request.view_args["day"]
+def date(month, day):
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
     data = odgovor.json()
     dogodki = data["events"]
