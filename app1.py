@@ -1,13 +1,13 @@
-from flask import Flask, render_template, request, redirect, session, jsonify, url_for
+from flask import Flask, render_template, request, redirect, session, url_for
 from tinydb import TinyDB, Query
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 import threading
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates1")
 app.secret_key = "skrivamoTaKljuč"
 
-db = TinyDB("db.json")
+db = TinyDB("db1.json")
 all_data = db.all()
 users = db.table("users")
 
@@ -106,120 +106,11 @@ def dashboard():
     if "user" not in session:
         return redirect("/login")
     print("all users:", get_all_users())
-    all_users = get_all_users()
-    posts = []
-    for user in all_users:
-        for note_id, note in user.get("note", {}).items():
-            posts.append({
-                "username": user["username"],
-                "id": note_id,
-                "content": note.get("content", ""),
-                "like": note.get("like", 0),
-                "dislike": note.get("dislike", 0),
-                "comment": note.get("comment", [])
-            })
-    print(session, "dash")
-    return render_template("dashboard.html", uporabnik = session["user"], posts = posts, admin = session.get("admin", 0))
-
-#like
-@app.route("/like", methods=["POST"])
-def like():
-    note_id = request.form["id"]
-    username = session["user"]
-    with db_lock:
-        all_users = users.all()
-        for user in all_users:
-            if note_id in user.get("note", {}):
-                note = user["note"][note_id]
-                like_users = note.get("like_users", [])
-                dislike_users = note.get("dislike_users", [])
-                if username in like_users:
-                    like_users.remove(username)
-                else:
-                    like_users.append(username)
-                    if username in dislike_users:
-                        dislike_users.remove(username)
-                note["like"] = len(like_users)
-                note["dislike"] = len(dislike_users)
-                note["like_users"] = like_users
-                note["dislike_users"] = dislike_users
-                users.update({"note": user["note"]}, User.username == user["username"])
-                return jsonify({"like": note["like"], "dislike": note["dislike"], "likeActive": username in like_users, "dislikeActive": username in dislike_users})
-    return "OK"
-
-#dislike
-@app.route("/dislike", methods=["POST"])
-def dislike():
-    note_id = request.form["id"]
-    username = session["user"]
-    with db_lock:
-        all_users = users.all()
-        for user in all_users:
-            if note_id in user.get("note", {}):
-                note = user["note"][note_id]
-                like_users = note.get("like_users", [])
-                dislike_users = note.get("dislike_users", [])
-                if username in dislike_users:
-                    dislike_users.remove(username)
-                else:
-                    dislike_users.append(username)
-                    if username in like_users:
-                        like_users.remove(username)
-                note["like"] = len(like_users)
-                note["dislike"] = len(dislike_users)
-                note["like_users"] = like_users
-                note["dislike_users"] = dislike_users
-                users.update({"note": user["note"]}, User.username == user["username"])
-                return jsonify({"like": note["like"], "dislike": note["dislike"], "likeActive": username in like_users, "dislikeActive": username in dislike_users})
-    return "OK"
-
-#comment
-@app.route("/comments/<id>", methods=["GET", "POST"])
-def comments(id):
-    if "user" not in session:
-        return redirect("/login")
-    if request.method == "POST":
-        action = request.form.get("action")
-        index = int(request.form.get("index", -1))
-        with db_lock:
-            all_users = users.all()
-            for user in all_users:
-                if id in user.get("note", {}):
-                    note = user["note"][id]
-                    comment_list = note.get("comment", [])
-                    if action == "delete" and 0 <= index < len(comment_list):
-                        comment_list.pop(index)
-                        print(f"Komentar izbrisan (index: {index}) za note: {id}")
-                    else:
-                        content = request.form.get("content")
-                        if not content or content.strip() == "":
-                            return "Prazen komentar", 400
-                        comment_list.append({"username": session["user"], "content": content})
-                        print(f"Nov komentar od {session['user']}: {content}")
-                    note["comment"] = comment_list
-                    users.update({"note": user["note"]}, User.username == user["username"])
-                    print(f"Posodobljena baza za uporabnika: {user['username']}")
-                    return "OK"
-            return "Note ne obstaja", 404
-    all_users = users.all()
-    comments_list = []
-    for user in all_users:
-        if id in user.get("note", {}):
-            for c in user["note"][id].get("comment", []):
-                comments_list.append(c)
-            break
-    return render_template("comments.html", id=id, uporabnik=session["user"], comments=comments_list)
-#profile
-@app.route("/profile")
-def profile():
-    if "user" not in session:
-        return redirect("/login")
-    print("all users:", get_all_users())
     user = users.get(User.username == session["user"])
     notes = user["note"]
     #print(notes)
     print(session, "dash")
-    return render_template("profile.html", uporabnik = session["user"], notes = notes, admin = session.get("admin", 0))
+    return render_template("dashboard.html", uporabnik = session["user"], notes = notes, admin = session.get("admin", 0))
 
 def get_all_users():
     return users.all()
@@ -229,7 +120,7 @@ def get_all_users():
 def editNote(id):
     if "user" not in session:
         return redirect("/login")
-    
+
     # Check if admin is accessing another user's note
     target_user = request.args.get("user")
     if target_user and session.get("admin", 0) in (1, 2):
@@ -239,10 +130,10 @@ def editNote(id):
         # Regular user accessing their own note
         user = users.get(User.username == session["user"])
         target_user = None
-    
+
     if not user:
         return "Uporabnik ne obstaja", 404
-    
+
     note = user["note"].get(id, "")
     return render_template("editNote.html", id = id, note = note, uporabnik = session["user"], target_user = target_user)
 
@@ -253,13 +144,14 @@ def newNote():
     with db_lock:
         user = users.get(User.username == session["user"])
         notes = user.get("note", {})
-        notes[id] = {"content": "", "like": 0, "dislike": 0, "comment": []}
+        notes[id] = {"title": "", "content": ""}
         users.update({"note": notes}, User.username == session["user"])
     return redirect(url_for('editNote', id=id))
 
 #save_note
 @app.route("/saveNote", methods = ["POST"])
 def saveNote():
+    title = request.form["title"]
     content = request.form["content"]
     id = request.form["id"]
     target_user = request.form.get("user", "")
@@ -269,14 +161,14 @@ def saveNote():
             # Admin saving another user's note
             user = users.get(User.username == target_user)
             if user:
-                user["note"][id]["content"] = content
+                user["note"][id] = {"title": title, "content": content}
                 users.update({"note": user["note"]}, User.username == target_user)
         else:
             # User saving their own note
             user = users.get(User.username == session["user"])
             if user:
                 notes = user.get("note", {})
-                notes[id]["content"] = content
+                notes[id] = {"title": title, "content": content}
                 users.update({"note": notes}, User.username == session["user"])
 
     return "OK"
@@ -356,4 +248,4 @@ def change_password():
         return redirect("/dashboard")
     return render_template("change_password.html")
 
-app.run(debug = True)
+app.run(debug = True, port=5001)
