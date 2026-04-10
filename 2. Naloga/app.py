@@ -189,13 +189,18 @@ def comments(id):
                     comment_list = note.get("comment", [])
                     if action == "delete" and 0 <= index < len(comment_list):
                         comment_list.pop(index)
+                        print(f"Komentar izbrisan (index: {index}) za note: {id}")
                     else:
                         content = request.form.get("content")
+                        if not content or content.strip() == "":
+                            return "Prazen komentar", 400
                         comment_list.append({"username": session["user"], "content": content})
+                        print(f"Nov komentar od {session['user']}: {content}")
                     note["comment"] = comment_list
                     users.update({"note": user["note"]}, User.username == user["username"])
-                    break
-        return "OK"
+                    print(f"Posodobljena baza za uporabnika: {user['username']}")
+                    return "OK"
+            return "Note ne obstaja", 404
     all_users = users.all()
     comments_list = []
     for user in all_users:

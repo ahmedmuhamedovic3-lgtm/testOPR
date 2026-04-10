@@ -44,7 +44,14 @@
             $.ajax({
                 url: "/comments/{{ id }}",
                 method: "POST",
-                data: { content: komentar.value }
+                data: { content: komentar.value },
+                success: function(response) {
+                    console.log("Komentar shranjen:", response);
+                },
+                error: function(xhr) {
+                    console.error("Napaka pri shranjevanju komentarja:", xhr.responseText);
+                    alert("Napaka pri shranjevanju komentarja!");
+                }
             });
         };
 
