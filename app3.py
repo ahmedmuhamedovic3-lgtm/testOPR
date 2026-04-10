@@ -45,9 +45,13 @@ def home():
 
 #/date/<month>/<day> - dogodki za določen datum
 @app.route("/date/<month>/<day>")
-def date(month, day):
-    # Tukaj boste implementirali logiko za prikaz dogodkov za določen datum
-    pass
+def date():
+    month = request.view_args["month"]
+    day = request.view_args["day"]
+    odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
+    data = odgovor.json()
+    dogodki = data["events"]
+    return render_template("date.html", month=month, day=day, dogodki=dogodki)
 
 # =====================================================
 # MAIN
