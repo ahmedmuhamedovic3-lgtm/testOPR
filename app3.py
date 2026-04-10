@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
 import os
+import calendar
 
 app = Flask(__name__, template_folder="templates3", static_folder="static3")
 
@@ -47,14 +48,13 @@ def home():
 @app.route("/date/<month>/<day>")
 def date(month, day):
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
-    if odgovor.status_code != 200:
-        return f"Napaka: API je vrnil status {odgovor.status_code}", 404
-    try:
-        data = odgovor.json()
-        dogodki = data.get("events", [])
-    except requests.exceptions.JSONDecodeError:
-        return "Napaka: API ni vrnil veljavnega JSON-a", 500
-    return render_template("date.html", month=month, day=day, dogodki=dogodki)
+    data = odgovor.json()
+    dogodki = data.get("events", [])
+    meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij', 
+              'julij', 'avgust', 'september', 'oktober', 'november', 'december']
+    monthName = meseci[int(month)]
+    print(dogodki)
+    return render_template("events.html", month=monthName, day=day, dogodki=dogodki)
 
 # =====================================================
 # MAIN
