@@ -7,12 +7,40 @@
     <h1>Dogodki skozi čas</h1>
     Ta stran je namenjena prikazu dogodkov skozi čas. Tukaj lahko vidite pomembne trenutke, ki so se zgodili skozi zgodovino.<br><br>
     <strong>Izberite dan:</strong>
-    <form method="get" action="/home">
-        <input type="date" name="date" value="{{ date }}">
-        <button type="submit">Prikaži dogodke</button><br>
+    <form method="get" action="/today">
+        <input type="date" name="date" id="dateInput" value="{{ date }}">
+        <button type="button" onclick="goToDate()">Prikaži dogodke</button><br>
         Ali pa izberite današnji dan:
-        <button type="submit" name="date" value="{{ today }}">Današnji dan</button>
+        <button type="button" onclick="goToToday()">Današnji dan</button>
     </form>
 
 </body>
 </html>
+
+<script>
+function parseDate(dateStr) {
+    var date = new Date(dateStr);
+    var months = ["january", "february", "march", "april", "may", "june",
+                  "july", "august", "september", "october", "november", "december"];
+    var month = months[date.getMonth()];
+    var day = date.getDate();
+    return { month: month, day: day };
+}
+
+function goToDate() {
+    var dateInput = document.getElementById("dateInput").value;
+    if (!dateInput) {
+        alert("Izberi datum!");
+        return;
+    }
+    var parsed = parseDate(dateInput);
+    window.location.href = "/date/" + parsed.month + "/" + parsed.day;
+}
+
+function goToToday() {
+    var today = new Date();
+    var dateStr = today.toISOString().split("T")[0];
+    var parsed = parseDate(dateStr);
+    window.location.href = "/date/" + parsed.month + "/" + parsed.day;
+}
+</script>
