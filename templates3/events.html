@@ -14,3 +14,23 @@
     <div>
 </body>
 </html>
+
+<script>
+    function parseDate(dateStr) {
+    var date = new Date(dateStr);
+    // byabbe.se API uporablja številčne mesece (1-12)
+    var month = date.getMonth() + 1; // getMonth() vrne 0-11
+    var day = date.getDate();
+    return { month: month, day: day };
+}
+
+function goToDate() {
+    var dateInput = document.getElementById("dateInput").value;
+    if (!dateInput) {
+        alert("Izberi datum!");
+        return;
+    }
+    var parsed = parseDate(dateInput);
+    window.location.href = "/events/" + parsed.month + "/" + parsed.day;
+}
+</script>

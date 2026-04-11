@@ -88,9 +88,9 @@ def home():
 
     return render_template("home.html", kraj=kraj, lat=lat, lon=lon, day=day, month=monthName, events=events)
 
-#/date/<month>/<day> - dogodki za določen datum
-@app.route("/events/<month>/<day>")
-def date(month, day):
+#/events - dogodki za določen datum
+@app.route("/events")
+def date():
     if request.headers.get('X-Forwarded-For'):
         ip = request.headers.get('X-Forwarded-For').split(',')[0]
     else:
