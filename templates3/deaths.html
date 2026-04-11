@@ -13,6 +13,7 @@
 </body>
 </html>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
 function parseDate(dateStr) {
     var date = new Date(dateStr);
@@ -48,7 +49,8 @@ function goToDate() {
                         html += "<li><a href='" + link.wikipedia + "' target='_blank'>" + link.title + "</a></li>";
                     }
                     html += "</ul>";
-                    html += "<div id='favourites'><button type='button' onclick='favourites()'>Dodaj med priljubljene</button></div>";
+                    var deathJson = encodeURIComponent(JSON.stringify(death));
+                    html += "<div class='fav-btn' onclick='favourites(this, \"" + deathJson + "\")'><button type='button'>Dodaj med priljubljene</button></div>";
                 }
                 html += "</li><br>";
             }
@@ -62,23 +64,26 @@ function goToDate() {
         document.getElementById("deathsDiv").innerHTML = "<p>Napaka pri nalaganju podatkov.</p>";
         document.getElementById("resultsTitle").innerText = "";
     });
-    function favourites() {
-        $.ajax({
-            url: "/favourites",
-            method: "POST",
-            data: {
-                type: "event",
-                description: event.description,
-                year: event.year,
-                wikipedia: event.wikipedia
-            },
-            success: function(result) {
-                alert("Dogodek dodan med priljubljene!");
-            },
-            error: function(err) {
-                alert("Napaka pri dodajanju med priljubljene.");
-            }
-        });
-    }
+}
+
+function favourites(el, evtJson) {
+    var divFavourites = $(el);
+    var evt = JSON.parse(decodeURIComponent(evtJson));
+    $.ajax({
+        url: "/favourites",
+        method: "POST",
+        data: {
+            type: "death",
+            year: evt.year,
+            description: evt.description,
+            wikipedia: JSON.stringify(evt.wikipedia)
+        },
+        success: function(result) {
+            divFavourites.html("Dodano med priljubljene!");
+        },
+        error: function(err) {
+            divFavourites.html("Napaka pri dodajanju med priljubljene.");
+        }
+    });
 }
 </script>
