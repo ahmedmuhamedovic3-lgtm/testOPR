@@ -41,7 +41,7 @@ class History(db.Model):
     """Zgodovina ogledov"""
     id = db.Column(db.Integer, primary_key=True)
     ip_address = db.Column(db.String(50), nullable=False)
-    date_viewed = db.Column(db.String(20), nullable=False)
+    date_viewed = db.Column(db.String(50), nullable=False)
     viewed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -108,12 +108,13 @@ def events():
                   'julij', 'avgust', 'september', 'oktober', 'november', 'december']
         monthName = meseci[int(month)]
 
-        # Zabeleži ogled v zgodovino (samo enkrat na IP + datum)
-        obstojeci = History.query.filter_by(ip_address=ip, date_viewed=f"{monthName}/{day}").first()
+        # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
+        date_key = f"events/{monthName}/{day}"
+        obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
         if obstojeci:
             obstojeci.viewed_at = datetime.utcnow()
         else:
-            nov_obisk = History(ip_address=ip, date_viewed=f"{monthName}/{day}")
+            nov_obisk = History(ip_address=ip, date_viewed=date_key)
             db.session.add(nov_obisk)
         db.session.commit()
 
@@ -142,12 +143,13 @@ def births():
                   'julij', 'avgust', 'september', 'oktober', 'november', 'december']
         monthName = meseci[int(month)]
 
-        # Zabeleži ogled v zgodovino (samo enkrat na IP + datum)
-        obstojeci = History.query.filter_by(ip_address=ip, date_viewed=f"{monthName}/{day}").first()
+        # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
+        date_key = f"births/{monthName}/{day}"
+        obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
         if obstojeci:
             obstojeci.viewed_at = datetime.utcnow()
         else:
-            nov_obisk = History(ip_address=ip, date_viewed=f"{monthName}/{day}")
+            nov_obisk = History(ip_address=ip, date_viewed=date_key)
             db.session.add(nov_obisk)
         db.session.commit()
 
@@ -176,12 +178,13 @@ def deaths():
                   'julij', 'avgust', 'september', 'oktober', 'november', 'december']
         monthName = meseci[int(month)]
 
-        # Zabeleži ogled v zgodovino (samo enkrat na IP + datum)
-        obstojeci = History.query.filter_by(ip_address=ip, date_viewed=f"{monthName}/{day}").first()
+        # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
+        date_key = f"deaths/{monthName}/{day}"
+        obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
         if obstojeci:
             obstojeci.viewed_at = datetime.utcnow()
         else:
-            nov_obisk = History(ip_address=ip, date_viewed=f"{monthName}/{day}")
+            nov_obisk = History(ip_address=ip, date_viewed=date_key)
             db.session.add(nov_obisk)
         db.session.commit()
 
