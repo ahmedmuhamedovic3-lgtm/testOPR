@@ -6,20 +6,17 @@
 <body>
     <h1>Dogodki skozi čas</h1>
     <strong>Izberite dan:</strong>
-    <form method="get" action="/events">
-        <input type="date" name="date" id="dateInput" value="{{ date }}">
-        <button type="button" onclick="goToDate()">Prikaži dogodke</button><br>
-    </form>
-    <h2>Dogodki na dan {{ day }}. {{ month }}</h2>
-    <div>
+    <input type="date" name="date" id="dateInput"><br>
+    <button type="button" onclick="goToDate()">Prikaži dogodke</button>
+    <h2 id="resultsTitle"></h2>
+    <div id="eventsDiv"></div>
 </body>
 </html>
 
 <script>
-    function parseDate(dateStr) {
+function parseDate(dateStr) {
     var date = new Date(dateStr);
-    // byabbe.se API uporablja številčne mesece (1-12)
-    var month = date.getMonth() + 1; // getMonth() vrne 0-11
+    var month = date.getMonth() + 1;
     var day = date.getDate();
     return { month: month, day: day };
 }
@@ -31,6 +28,38 @@ function goToDate() {
         return;
     }
     var parsed = parseDate(dateInput);
-    window.location.href = "/events/" + parsed.month + "/" + parsed.day;
+    document.getElementById("eventsDiv").innerHTML = "Nalaganje...";
+    document.getElementById("resultsTitle").innerText = "Nalaganje...";
+
+    fetch("/events?month=" + parsed.month + "&day=" + parsed.day)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        document.getElementById("resultsTitle").innerText = "Dogodki na dan " + data.day + ". " + data.month;
+        var html = "";
+        if (data.events && data.events.length > 0) {
+            html = "<ul>";
+            for (var i = 0; i < data.events.length; i++) {
+                var event = data.events[i];
+                html += "<li><strong>" + event.year + ":</strong> " + event.description;
+                if (event.wikipedia) {
+                    html += "<br><strong>Wikipedia povezave:</strong><ul>";
+                    for (var j = 0; j < event.wikipedia.length; j++) {
+                        var link = event.wikipedia[j];
+                        html += "<li><a href='" + link.wikipedia + "' target='_blank'>" + link.title + "</a></li>";
+                    }
+                    html += "</ul>";
+                }
+                html += "</li><br>";
+            }
+            html += "</ul>";
+        } else {
+            html = "<p>Ni dogodkov za ta dan.</p>";
+        }
+        document.getElementById("eventsDiv").innerHTML = html;
+    })
+    .catch(function(err) {
+        document.getElementById("eventsDiv").innerHTML = "<p>Napaka pri nalaganju podatkov.</p>";
+        document.getElementById("resultsTitle").innerText = "";
+    });
 }
 </script>

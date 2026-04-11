@@ -88,31 +88,39 @@ def home():
 
     return render_template("home.html", kraj=kraj, lat=lat, lon=lon, day=day, month=monthName, events=events)
 
-#/events - dogodki za določen datum
+#/events - stran z izbiro datuma (ali AJAX za dogodke)
 @app.route("/events")
-def date():
-    if request.headers.get('X-Forwarded-For'):
-        ip = request.headers.get('X-Forwarded-For').split(',')[0]
-    else:
-        ip = request.remote_addr
+def events():
+    # Če je AJAX klic z month/day parametri, vrni JSON
+    if request.args.get('month') and request.args.get('day'):
+        if request.headers.get('X-Forwarded-For'):
+            ip = request.headers.get('X-Forwarded-For').split(',')[0]
+        else:
+            ip = request.remote_addr
 
-    odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
-    data = odgovor.json()
-    events = data.get("events", [])
-    meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
-              'julij', 'avgust', 'september', 'oktober', 'november', 'december']
-    monthName = meseci[int(month)]
+        month = request.args.get('month')
+        day = request.args.get('day')
 
-    # Zabeleži ogled v zgodovino (samo enkrat na IP + datum)
-    obstojeci = History.query.filter_by(ip_address=ip, date_viewed=f"{monthName}/{day}").first()
-    if obstojeci:
-        obstojeci.viewed_at = datetime.utcnow()
-    else:
-        nov_obisk = History(ip_address=ip, date_viewed=f"{monthName}/{day}")
-        db.session.add(nov_obisk)
-    db.session.commit()
+        odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
+        data = odgovor.json()
+        events_list = data.get("events", [])
+        meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
+                  'julij', 'avgust', 'september', 'oktober', 'november', 'december']
+        monthName = meseci[int(month)]
 
-    return render_template("events.html", month=monthName, day=day, events=events)
+        # Zabeleži ogled v zgodovino (samo enkrat na IP + datum)
+        obstojeci = History.query.filter_by(ip_address=ip, date_viewed=f"{monthName}/{day}").first()
+        if obstojeci:
+            obstojeci.viewed_at = datetime.utcnow()
+        else:
+            nov_obisk = History(ip_address=ip, date_viewed=f"{monthName}/{day}")
+            db.session.add(nov_obisk)
+        db.session.commit()
+
+        return jsonify({"month": monthName, "day": day, "events": events_list})
+
+    # Običajen obisk - prikaži stran
+    return render_template("events.html")
 
 # =====================================================
 # MAIN
