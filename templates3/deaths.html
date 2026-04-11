@@ -48,6 +48,7 @@ function goToDate() {
                         html += "<li><a href='" + link.wikipedia + "' target='_blank'>" + link.title + "</a></li>";
                     }
                     html += "</ul>";
+                    html += "<div id='favourites'><button type='button' onclick='favourites()'>Dodaj med priljubljene</button></div>";
                 }
                 html += "</li><br>";
             }
@@ -61,5 +62,23 @@ function goToDate() {
         document.getElementById("deathsDiv").innerHTML = "<p>Napaka pri nalaganju podatkov.</p>";
         document.getElementById("resultsTitle").innerText = "";
     });
+    function favourites() {
+        $.ajax({
+            url: "/favourites",
+            method: "POST",
+            data: {
+                type: "event",
+                description: event.description,
+                year: event.year,
+                wikipedia: event.wikipedia
+            },
+            success: function(result) {
+                alert("Dogodek dodan med priljubljene!");
+            },
+            error: function(err) {
+                alert("Napaka pri dodajanju med priljubljene.");
+            }
+        });
+    }
 }
 </script>

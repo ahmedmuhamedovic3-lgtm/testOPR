@@ -24,6 +24,7 @@
                 {% for link in event.wikipedia %}
                     <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
                 {% endfor %}
+                <div id="favourites"><button type="button" onclick="favourites()">Dodaj med priljubljene</button></div>
                 </ul>
             {% endif %}
             </li><br>
