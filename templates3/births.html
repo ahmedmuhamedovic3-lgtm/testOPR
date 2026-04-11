@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <h1>Rojstva skozi čas</h1>
+    <strong>Izberite dan:</strong>
+    <input type="date" name="date" id="dateInput"><br>
+    <button type="button" onclick="goToDate()">Prikaži rojstva</button>
+    <h2 id="resultsTitle"></h2>
+    <div id="birthsDiv"></div>
+</body>
+</html>
+
+<script>
+function parseDate(dateStr) {
+    var date = new Date(dateStr);
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    return { month: month, day: day };
+}
+
+function goToDate() {
+    var dateInput = document.getElementById("dateInput").value;
+    if (!dateInput) {
+        alert("Izberi datum!");
+        return;
+    }
+    var parsed = parseDate(dateInput);
+    document.getElementById("birthsDiv").innerHTML = "Nalaganje...";
+    document.getElementById("resultsTitle").innerText = "Nalaganje...";
+
+    fetch("/births?month=" + parsed.month + "&day=" + parsed.day)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        document.getElementById("resultsTitle").innerText = "Rojstva na dan " + data.day + ". " + data.month;
+        var html = "";
+        if (data.births && data.births.length > 0) {
+            html = "<ul>";
+            for (var i = 0; i < data.births.length; i++) {
+                var birth = data.births[i];
+                html += "<li><strong>" + birth.year + ":</strong> " + birth.description;
+                if (birth.wikipedia) {
+                    html += "<br><strong>Wikipedia povezave:</strong><ul>";
+                    for (var j = 0; j < birth.wikipedia.length; j++) {
+                        var link = birth.wikipedia[j];
+                        html += "<li><a href='" + link.wikipedia + "' target='_blank'>" + link.title + "</a></li>";
+                    }
+                    html += "</ul>";
+                }
+                html += "</li><br>";
+            }
+            html += "</ul>";
+        } else {
+            html = "<p>Ni rojstev za ta dan.</p>";
+        }
+        document.getElementById("birthsDiv").innerHTML = html;
+    })
+    .catch(function(err) {
+        document.getElementById("birthsDiv").innerHTML = "<p>Napaka pri nalaganju podatkov.</p>";
+        document.getElementById("resultsTitle").innerText = "";
+    });
+}
+</script>

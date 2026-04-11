@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <h1>Dogodki skozi čas</h1>
+    <strong>Izberite dan:</strong>
+    <input type="date" name="date" id="dateInput"><br>
+    <button type="button" onclick="goToDate()">Prikaži smrti</button>
+    <h2 id="resultsTitle"></h2>
+    <div id="deathsDiv"></div>
+</body>
+</html>
+
+<script>
+function parseDate(dateStr) {
+    var date = new Date(dateStr);
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    return { month: month, day: day };
+}
+
+function goToDate() {
+    var dateInput = document.getElementById("dateInput").value;
+    if (!dateInput) {
+        alert("Izberi datum!");
+        return;
+    }
+    var parsed = parseDate(dateInput);
+    document.getElementById("deathsDiv").innerHTML = "Nalaganje...";
+    document.getElementById("resultsTitle").innerText = "Nalaganje...";
+
+    fetch("/deaths?month=" + parsed.month + "&day=" + parsed.day)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        document.getElementById("resultsTitle").innerText = "Smrti na dan " + data.day + ". " + data.month;
+        var html = "";
+        if (data.deaths && data.deaths.length > 0) {
+            html = "<ul>";
+            for (var i = 0; i < data.deaths.length; i++) {
+                var death = data.deaths[i];
+                html += "<li><strong>" + death.year + ":</strong> " + death.description;
+                if (death.wikipedia) {
+                    html += "<br><strong>Wikipedia povezave:</strong><ul>";
+                    for (var j = 0; j < death.wikipedia.length; j++) {
+                        var link = death.wikipedia[j];
+                        html += "<li><a href='" + link.wikipedia + "' target='_blank'>" + link.title + "</a></li>";
+                    }
+                    html += "</ul>";
+                }
+                html += "</li><br>";
+            }
+            html += "</ul>";
+        } else {
+            html = "<p>Ni smrti za ta dan.</p>";
+        }
+        document.getElementById("deathsDiv").innerHTML = html;
+    })
+    .catch(function(err) {
+        document.getElementById("deathsDiv").innerHTML = "<p>Napaka pri nalaganju podatkov.</p>";
+        document.getElementById("resultsTitle").innerText = "";
+    });
+}
+</script>

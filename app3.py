@@ -122,6 +122,74 @@ def events():
     # Običajen obisk - prikaži stran
     return render_template("events.html")
 
+#/births - stran z izbiro datuma (ali AJAX za dogodke)
+@app.route("/births")
+def births():
+    # Če je AJAX klic z month/day parametri, vrni JSON
+    if request.args.get('month') and request.args.get('day'):
+        if request.headers.get('X-Forwarded-For'):
+            ip = request.headers.get('X-Forwarded-For').split(',')[0]
+        else:
+            ip = request.remote_addr
+
+        month = request.args.get('month')
+        day = request.args.get('day')
+
+        odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/births.json")
+        data = odgovor.json()
+        births_list = data.get("births", [])
+        meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
+                  'julij', 'avgust', 'september', 'oktober', 'november', 'december']
+        monthName = meseci[int(month)]
+
+        # Zabeleži ogled v zgodovino (samo enkrat na IP + datum)
+        obstojeci = History.query.filter_by(ip_address=ip, date_viewed=f"{monthName}/{day}").first()
+        if obstojeci:
+            obstojeci.viewed_at = datetime.utcnow()
+        else:
+            nov_obisk = History(ip_address=ip, date_viewed=f"{monthName}/{day}")
+            db.session.add(nov_obisk)
+        db.session.commit()
+
+        return jsonify({"month": monthName, "day": day, "births": births_list})
+
+    # Običajen obisk - prikaži stran
+    return render_template("births.html")
+
+#/deaths - stran z izbiro datuma (ali AJAX za dogodke)
+@app.route("/deaths")
+def deaths():
+    # Če je AJAX klic z month/day parametri, vrni JSON
+    if request.args.get('month') and request.args.get('day'):
+        if request.headers.get('X-Forwarded-For'):
+            ip = request.headers.get('X-Forwarded-For').split(',')[0]
+        else:
+            ip = request.remote_addr
+
+        month = request.args.get('month')
+        day = request.args.get('day')
+
+        odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/deaths.json")
+        data = odgovor.json()
+        deaths_list = data.get("deaths", [])
+        meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
+                  'julij', 'avgust', 'september', 'oktober', 'november', 'december']
+        monthName = meseci[int(month)]
+
+        # Zabeleži ogled v zgodovino (samo enkrat na IP + datum)
+        obstojeci = History.query.filter_by(ip_address=ip, date_viewed=f"{monthName}/{day}").first()
+        if obstojeci:
+            obstojeci.viewed_at = datetime.utcnow()
+        else:
+            nov_obisk = History(ip_address=ip, date_viewed=f"{monthName}/{day}")
+            db.session.add(nov_obisk)
+        db.session.commit()
+
+        return jsonify({"month": monthName, "day": day, "deaths": deaths_list})
+
+    # Običajen obisk - prikaži stran
+    return render_template("deaths.html")
+
 # =====================================================
 # MAIN
 # =====================================================
