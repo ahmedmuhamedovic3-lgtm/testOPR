@@ -4,25 +4,13 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Dogodki na dan {{ day }}. {{ month }}</h1>
-    {% if events %}
-        <ul>
-        {% for event in events %}
-            <li><strong>{{ event.year }}:</strong> {{ event.description }}
-            {% if event.wikipedia %}
-                <br>
-                <strong>Wikipedia povezave:</strong>
-                <ul>
-                {% for link in event.wikipedia %}
-                    <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
-                {% endfor %}
-                </ul>
-            {% endif %}
-            </li><br>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>Ni dogodkov za ta dan.</p>
-    {% endif %}
+    <h1>Dogodki skozi čas</h1>
+    <strong>Izberite dan:</strong>
+    <form method="get" action="/events">
+        <input type="date" name="date" id="dateInput" value="{{ date }}">
+        <button type="button" onclick="goToDate()">Prikaži dogodke</button><br>
+    </form>
+    <h2>Dogodki na dan {{ day }}. {{ month }}</h2>
+    <div>
 </body>
 </html>

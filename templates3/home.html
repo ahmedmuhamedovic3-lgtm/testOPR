@@ -10,9 +10,27 @@
     <form method="get" action="/events">
         <input type="date" name="date" id="dateInput" value="{{ date }}">
         <button type="button" onclick="goToDate()">Prikaži dogodke</button><br>
-        Ali pa izberite današnji dan:
-        <button type="button" onclick="goToToday()">Današnji dan</button>
     </form>
+    <h2>Dogodki na današnji dan:</h2>
+    {% if events %}
+        <ul>
+        {% for event in events %}
+            <li><strong>{{ event.year }}:</strong> {{ event.description }}
+            {% if event.wikipedia %}
+                <br>
+                <strong>Wikipedia povezave:</strong>
+                <ul>
+                {% for link in event.wikipedia %}
+                    <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            </li><br>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Ni dogodkov za ta dan.</p>
+    {% endif %}
 
 </body>
 </html>
@@ -33,13 +51,6 @@ function goToDate() {
         return;
     }
     var parsed = parseDate(dateInput);
-    window.location.href = "/events/" + parsed.month + "/" + parsed.day;
-}
-
-function goToToday() {
-    var today = new Date();
-    var dateStr = today.toISOString().split("T")[0];
-    var parsed = parseDate(dateStr);
     window.location.href = "/events/" + parsed.month + "/" + parsed.day;
 }
 </script>

@@ -76,7 +76,17 @@ def home():
     lat = data["latitude"]
     lon = data["longitude"]
 
-    return render_template("home.html", kraj=kraj, lat=lat, lon=lon)
+    x = datetime.now()
+    day = x.day
+    month = x.month
+    odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
+    data = odgovor.json()
+    events = data.get("events", [])
+    meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
+              'julij', 'avgust', 'september', 'oktober', 'november', 'december']
+    monthName = meseci[int(month)]
+
+    return render_template("home.html", kraj=kraj, lat=lat, lon=lon, day=day, month=monthName, events=events)
 
 #/date/<month>/<day> - dogodki za določen datum
 @app.route("/events/<month>/<day>")
