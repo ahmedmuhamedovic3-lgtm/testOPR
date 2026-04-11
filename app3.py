@@ -93,9 +93,13 @@ def date(month, day):
               'julij', 'avgust', 'september', 'oktober', 'november', 'december']
     monthName = meseci[int(month)]
 
-    # Zabeleži ogled v zgodovino
-    nov_obisk = History(ip_address=ip, date_viewed=f"{monthName}/{day}")
-    db.session.add(nov_obisk)
+    # Zabeleži ogled v zgodovino (samo enkrat na IP + datum)
+    obstojeci = History.query.filter_by(ip_address=ip, date_viewed=f"{monthName}/{day}").first()
+    if obstojeci:
+        obstojeci.viewed_at = datetime.utcnow()
+    else:
+        nov_obisk = History(ip_address=ip, date_viewed=f"{monthName}/{day}")
+        db.session.add(nov_obisk)
     db.session.commit()
 
     return render_template("events.html", month=monthName, day=day, events=events)
