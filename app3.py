@@ -64,7 +64,7 @@ def home():
     # Ustvari bazo če še ne obstaja
     with app.app_context():
         db.create_all()
-    
+
     if request.headers.get('X-Forwarded-For'):
         ip = request.headers.get('X-Forwarded-For').split(',')[0]
     else:
@@ -75,6 +75,12 @@ def home():
     kraj = data["cityName"]
     lat = data["latitude"]
     lon = data["longitude"]
+
+    # Shrani obisk v zgodovino
+    nov_obisk = History(ip_address=ip, date_viewed="home")
+    db.session.add(nov_obisk)
+    db.session.commit()
+
     return render_template("home.html", kraj=kraj, lat=lat, lon=lon)
 
 #/date/<month>/<day> - dogodki za določen datum
