@@ -76,22 +76,28 @@ def home():
     lat = data["latitude"]
     lon = data["longitude"]
 
-    # Shrani obisk v zgodovino
-    nov_obisk = History(ip_address=ip, date_viewed="home")
-    db.session.add(nov_obisk)
-    db.session.commit()
-
     return render_template("home.html", kraj=kraj, lat=lat, lon=lon)
 
 #/date/<month>/<day> - dogodki za določen datum
 @app.route("/events/<month>/<day>")
 def date(month, day):
+    if request.headers.get('X-Forwarded-For'):
+        ip = request.headers.get('X-Forwarded-For').split(',')[0]
+    else:
+        ip = request.remote_addr
+
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
     data = odgovor.json()
     events = data.get("events", [])
-    meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij', 
+    meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
               'julij', 'avgust', 'september', 'oktober', 'november', 'december']
     monthName = meseci[int(month)]
+
+    # Zabeleži ogled v zgodovino
+    nov_obisk = History(ip_address=ip, date_viewed=f"{monthName}/{day}")
+    db.session.add(nov_obisk)
+    db.session.commit()
+
     return render_template("events.html", month=monthName, day=day, events=events)
 
 # =====================================================
