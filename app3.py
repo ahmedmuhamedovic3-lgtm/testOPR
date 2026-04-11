@@ -104,6 +104,15 @@ def events():
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
         data = odgovor.json()
         events_list = data.get("events", [])
+
+        odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/births.json")
+        data = odgovor.json()
+        births_list = data.get("births", [])
+
+        odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/deaths.json")
+        data = odgovor.json()
+        deaths_list = data.get("deaths", [])
+
         meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
                   'julij', 'avgust', 'september', 'oktober', 'november', 'december']
         monthName = meseci[int(month)]
@@ -118,7 +127,7 @@ def events():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": monthName, "day": day, "events": events_list})
+        return jsonify({"month": monthName, "day": day, "events": events_list, "births": births_list, "deaths": deaths_list})
 
     # Običajen obisk - prikaži stran
     return render_template("events.html")
