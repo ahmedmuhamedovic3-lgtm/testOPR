@@ -33,6 +33,48 @@
     {% else %}
         <p>Ni dogodkov za ta dan.</p>
     {% endif %}
+    <h2>Rojstva na današnji dan:</h2>
+    {% if births %}
+        <ul>
+        {% for birth in births %}
+            <li><strong>{{ birth.year }}:</strong> {{ birth.description }}
+            {% if birth.wikipedia %}
+                <br>
+                <strong>Wikipedia povezave:</strong>
+                <ul>
+                {% for link in birth.wikipedia %}
+                    <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
+                {% endfor %}
+                <div class="fav-btn" onclick='favourites(this, {{ birth|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+                </ul>
+            {% endif %}
+            </li><br>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Ni dogodkov za ta dan.</p>
+    {% endif %}
+    <h2>Smrti na današnji dan:</h2>
+    {% if deaths %}
+        <ul>
+        {% for death in deaths %}
+            <li><strong>{{ death.year }}:</strong> {{ death.description }}
+            {% if death.wikipedia %}
+                <br>
+                <strong>Wikipedia povezave:</strong>
+                <ul>
+                {% for link in death.wikipedia %}
+                    <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
+                {% endfor %}
+                <div class="fav-btn" onclick='favourites(this, {{ death|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+                </ul>
+            {% endif %}
+            </li><br>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Ni dogodkov za ta dan.</p>
+    {% endif %}
     
 
 </body>
