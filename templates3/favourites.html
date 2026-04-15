@@ -20,6 +20,7 @@
                     {% endfor %}
                     </ul>
                 {% endif %}
+                <div class="fav-btn" onclick='favourites(this, {{ event|tojson|e }})'><button type="button">Odstrani iz priljubljenih</button></div>
             </li>
         {% endfor %}
         </ul>
@@ -29,3 +30,26 @@
     <a href="/"><strong>Nazaj na glavno stran</strong></a>
 </body>
 </html>
+
+<script>
+    function favourites(el, evtJson) {
+    var divFavourites = $(el);
+    var evt = JSON.parse(decodeURIComponent(evtJson));
+    $.ajax({
+        url: "/favourites",
+        method: "POST",
+        data: {
+            type: "birth",
+            year: evt.year,
+            description: evt.description,
+            wikipedia: JSON.stringify(evt.wikipedia)
+        },
+        success: function(result) {
+            divFavourites.html("Dodano med priljubljene!");
+        },
+        error: function(err) {
+            divFavourites.html("Napaka pri dodajanju med priljubljene.");
+        }
+    });
+}
+</script>
