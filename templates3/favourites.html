@@ -22,7 +22,7 @@
                     {% endfor %}
                     </ul>
                 {% endif %}
-                <div class="fav-btn" onclick='favourites(this, {{ favourite|tojson|e }})'><button type="button">Odstrani iz priljubljenih</button></div>
+                <div class="fav-btn" onclick='favourites(this, {{ favourite|tojson }})'><button type="button">Odstrani iz priljubljenih</button></div>
             </li>
         {% endfor %}
         </ul>
@@ -36,7 +36,7 @@
 <script>
     function favourites(el, evtJson) {
     var divFavourites = $(el);
-    var evt = JSON.parse(decodeURIComponent(evtJson));
+    var evt = JSON.parse(evtJson);
     $.ajax({
         url: "/favourites",
         method: "POST",
