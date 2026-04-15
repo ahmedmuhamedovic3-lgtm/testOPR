@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
+import random
 import requests
 import os
 import uuid
@@ -56,6 +57,25 @@ def get_client_ip():
         session['user_id'] = str(uuid.uuid4())[:8]
     return session['user_id']
 
+def get_random_date_advanced():
+    start_date = datetime(2024, 1, 1) # Prestopno leto za varnost pri 29. feb
+    end_date = datetime(2024, 12, 31)
+    
+    # Izračunamo razliko v dneh
+    time_between_dates = end_date - start_date
+    days_between_dates = time_between_dates.days
+    
+    # Dodamo naključno število dni začetnemu datumu
+    random_number_of_days = random.randrange(days_between_dates)
+    random_date = start_date + timedelta(days=random_number_of_days)
+    
+    return random_date.month, random_date.day
+
+def month_name(month):
+    meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
+              'julij', 'avgust', 'september', 'oktober', 'november', 'december']
+    return meseci[int(month)]
+
 
 # =====================================================
 # ROUTE - dodaj nove route tukaj
@@ -92,11 +112,9 @@ def home():
     data = odgovor.json()
     deaths_list = data.get("deaths", [])
 
-    meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
-                'julij', 'avgust', 'september', 'oktober', 'november', 'december']
-    monthName = meseci[int(month)]
+    month = month_name(month)
 
-    return render_template("home.html", kraj=kraj, lat=lat, lon=lon, day=day, month=monthName, events=events_list, births=births_list, deaths=deaths_list)
+    return render_template("home.html", kraj=kraj, lat=lat, lon=lon, day=day, month=month, events=events_list, births=births_list, deaths=deaths_list)
 
 #/events - stran z izbiro datuma (ali AJAX za dogodke)
 @app.route("/events")
@@ -109,12 +127,10 @@ def events():
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
         data = odgovor.json()
         events_list = data.get("events", [])
-        meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
-                  'julij', 'avgust', 'september', 'oktober', 'november', 'december']
-        monthName = meseci[int(month)]
+        month = month_name(month)
 
         # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
-        date_key = f"events/{monthName}/{day}"
+        date_key = f"events/{month}/{day}"
         obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
         if obstojeci:
             obstojeci.viewed_at = datetime.utcnow()
@@ -123,7 +139,7 @@ def events():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": monthName, "day": day, "events": events_list})
+        return jsonify({"month": month, "day": day, "events": events_list})
 
     # Običajen obisk - prikaži stran
     return render_template("events.html")
@@ -141,12 +157,10 @@ def births():
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/births.json")
         data = odgovor.json()
         births_list = data.get("births", [])
-        meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
-                  'julij', 'avgust', 'september', 'oktober', 'november', 'december']
-        monthName = meseci[int(month)]
+        month = month_name(month)
 
         # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
-        date_key = f"births/{monthName}/{day}"
+        date_key = f"births/{month}/{day}"
         obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
         if obstojeci:
             obstojeci.viewed_at = datetime.utcnow()
@@ -155,7 +169,7 @@ def births():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": monthName, "day": day, "births": births_list})
+        return jsonify({"month": month, "day": day, "births": births_list})
 
     # Običajen obisk - prikaži stran
     return render_template("births.html")
@@ -173,12 +187,10 @@ def deaths():
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/deaths.json")
         data = odgovor.json()
         deaths_list = data.get("deaths", [])
-        meseci = ['', 'januar', 'februar', 'marec', 'april', 'maj', 'junij',
-                  'julij', 'avgust', 'september', 'oktober', 'november', 'december']
-        monthName = meseci[int(month)]
+        month = month_name(month)
 
         # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
-        date_key = f"deaths/{monthName}/{day}"
+        date_key = f"deaths/{month}/{day}"
         obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
         if obstojeci:
             obstojeci.viewed_at = datetime.utcnow()
@@ -187,10 +199,39 @@ def deaths():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": monthName, "day": day, "deaths": deaths_list})
+        return jsonify({"month": month, "day": day, "deaths": deaths_list})
 
     # Običajen obisk - prikaži stran
     return render_template("deaths.html")
+
+#naključno
+@app.route("/random")
+def random():
+    ip = get_client_ip()
+
+    # Pridobi naključen datum
+    month, day = get_random_date_advanced()
+    month = month_name(month)
+
+    # Izbiraj med dogodki, rojstva in smrti, da bo bolj zanimivo
+    tip = random.choice(["events", "births", "deaths"])
+
+    # Pridobi podatke za ta datum
+    odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/{tip}.json")
+    data = odgovor.json()
+    print(data)
+
+    # Zabeleži ogled v zgodovino (samo enkrat na IP + tip)
+    date_key = f"random_event"
+    obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
+    if obstojeci:
+        obstojeci.viewed_at = datetime.utcnow()
+    else:
+        nov_obisk = History(ip_address=ip, date_viewed=date_key)
+        db.session.add(nov_obisk)
+    db.session.commit()
+
+    return render_template("random.html", event=random_event)
 
 #priljubljeni dogodki
 @app.route("/favourites", methods=["GET", "POST"])
