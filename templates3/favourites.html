@@ -22,7 +22,7 @@
                     {% endfor %}
                     </ul>
                 {% endif %}
-                <div class="fav-btn" onclick='favourites(this, {{ favourite|tojson }})'><button type="button">Odstrani iz priljubljenih</button></div>
+                <div class="fav-btn" data-index="{{ loop.index0 }}"><button type="button">Odstrani iz priljubljenih</button></div>
             </li>
         {% endfor %}
         </ul>
@@ -34,24 +34,32 @@
 </html>
 
 <script>
-    function favourites(el, evtJson) {
-    var divFavourites = $(el);
-    var evt = JSON.parse(evtJson);
-    $.ajax({
-        url: "/favourites",
-        method: "POST",
-        data: {
-            type: evt.type,
-            year: evt.year,
-            description: evt.description,
-            wikipedia: JSON.stringify(evt.wikipedia)
-        },
-        success: function(result) {
-            divFavourites.html("Dodano med priljubljene!");
-        },
-        error: function(err) {
-            divFavourites.html("Napaka pri dodajanju med priljubljene.");
-        }
+    var favouritesData = {{ favourites | tojson }};
+
+    $(document).on('click', '.fav-btn button', function() {
+        var divFavourites = $(this).closest('.fav-btn');
+        var index = divFavourites.data('index');
+        var evt = favouritesData[index];
+
+        $.ajax({
+            url: "/favourites",
+            method: "POST",
+            data: {
+                type: evt.type,
+                year: evt.year,
+                description: evt.description,
+                wikipedia: JSON.stringify(evt.wikipedia || [])
+            },
+            success: function(result) {
+                divFavourites.closest('li').remove();
+                if ($('.fav-btn').length === 0) {
+                    $('ul').remove();
+                    $('body').prepend('<p>Nimate še priljubljenih dogodkov.</p>');
+                }
+            },
+            error: function(err) {
+                divFavourites.html("Napaka pri odstranjevanju.");
+            }
+        });
     });
-}
 </script>
