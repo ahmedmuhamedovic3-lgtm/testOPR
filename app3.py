@@ -127,10 +127,10 @@ def events():
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
         data = odgovor.json()
         events_list = data.get("events", [])
-        month = month_name(month)
+        monthName = month_name(month)
 
         # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
-        date_key = f"events/{month}/{day}"
+        date_key = f"events/{monthName}/{day}"
         obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
         if obstojeci:
             obstojeci.viewed_at = datetime.utcnow()
@@ -139,7 +139,7 @@ def events():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": month, "day": day, "events": events_list})
+        return jsonify({"month": monthName, "day": day, "events": events_list})
 
     # Običajen obisk - prikaži stran
     return render_template("events.html")
@@ -157,10 +157,10 @@ def births():
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/births.json")
         data = odgovor.json()
         births_list = data.get("births", [])
-        month = month_name(month)
+        monthName = month_name(month)
 
         # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
-        date_key = f"births/{month}/{day}"
+        date_key = f"births/{monthName}/{day}"
         obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
         if obstojeci:
             obstojeci.viewed_at = datetime.utcnow()
@@ -169,7 +169,7 @@ def births():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": month, "day": day, "births": births_list})
+        return jsonify({"month": monthName, "day": day, "births": births_list})
 
     # Običajen obisk - prikaži stran
     return render_template("births.html")
@@ -187,10 +187,10 @@ def deaths():
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/deaths.json")
         data = odgovor.json()
         deaths_list = data.get("deaths", [])
-        month = month_name(month)
+        monthName = month_name(month)
 
         # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
-        date_key = f"deaths/{month}/{day}"
+        date_key = f"deaths/{monthName}/{day}"
         obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
         if obstojeci:
             obstojeci.viewed_at = datetime.utcnow()
@@ -199,7 +199,7 @@ def deaths():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": month, "day": day, "deaths": deaths_list})
+        return jsonify({"month": monthName, "day": day, "deaths": deaths_list})
 
     # Običajen obisk - prikaži stran
     return render_template("deaths.html")
