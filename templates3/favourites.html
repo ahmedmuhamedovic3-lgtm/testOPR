@@ -20,7 +20,7 @@
                     {% endfor %}
                     </ul>
                 {% endif %}
-                <div class="fav-btn" onclick='favourites(this, {{ event|tojson|e }})'><button type="button">Odstrani iz priljubljenih</button></div>
+                <div class="fav-btn" onclick='favourites(this, {{ favourite|tojson|e }})'><button type="button">Odstrani iz priljubljenih</button></div>
             </li>
         {% endfor %}
         </ul>
@@ -39,7 +39,7 @@
         url: "/favourites",
         method: "POST",
         data: {
-            type: "birth",
+            type: evt.type,
             year: evt.year,
             description: evt.description,
             wikipedia: JSON.stringify(evt.wikipedia)
