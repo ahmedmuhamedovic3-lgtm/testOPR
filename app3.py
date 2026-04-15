@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
 import os
+import uuid
 
 app = Flask(__name__, template_folder="templates3", static_folder="static3")
 
@@ -50,8 +51,10 @@ class History(db.Model):
 # =====================================================
 
 def get_client_ip():
-    """Vrne IP naslov trenutnega uporabnika"""
-    return request.remote_addr
+    """Vrne unikatni ID uporabnika iz session-a (vsak brskalnik ima svojega)"""
+    if 'user_id' not in session:
+        session['user_id'] = str(uuid.uuid4())[:8]
+    return session['user_id']
 
 
 # =====================================================
@@ -65,12 +68,9 @@ def home():
     with app.app_context():
         db.create_all()
 
-    if request.headers.get('X-Forwarded-For'):
-        ip = request.headers.get('X-Forwarded-For').split(',')[0]
-    else:
-        ip = request.remote_addr
-
-    odgovor = requests.get(f"https://free.freeipapi.com/api/json/{ip}")
+    # Geolokacija potrebuje pravi IP
+    real_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0]
+    odgovor = requests.get(f"https://free.freeipapi.com/api/json/{real_ip}")
     data = odgovor.json()
     kraj = data["cityName"]
     lat = data["latitude"]
@@ -103,11 +103,7 @@ def home():
 def events():
     # Če je AJAX klic z month/day parametri, vrni JSON
     if request.args.get('month') and request.args.get('day'):
-        if request.headers.get('X-Forwarded-For'):
-            ip = request.headers.get('X-Forwarded-For').split(',')[0]
-        else:
-            ip = request.remote_addr
-
+        ip = get_client_ip()
         month = request.args.get('month')
         day = request.args.get('day')
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
@@ -137,10 +133,7 @@ def events():
 def births():
     # Če je AJAX klic z month/day parametri, vrni JSON
     if request.args.get('month') and request.args.get('day'):
-        if request.headers.get('X-Forwarded-For'):
-            ip = request.headers.get('X-Forwarded-For').split(',')[0]
-        else:
-            ip = request.remote_addr
+        ip = get_client_ip()
 
         month = request.args.get('month')
         day = request.args.get('day')
@@ -172,10 +165,7 @@ def births():
 def deaths():
     # Če je AJAX klic z month/day parametri, vrni JSON
     if request.args.get('month') and request.args.get('day'):
-        if request.headers.get('X-Forwarded-For'):
-            ip = request.headers.get('X-Forwarded-For').split(',')[0]
-        else:
-            ip = request.remote_addr
+        ip = get_client_ip()
 
         month = request.args.get('month')
         day = request.args.get('day')
