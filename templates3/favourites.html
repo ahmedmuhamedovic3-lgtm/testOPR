@@ -1,17 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sl">
 <head>
-    <title>Document</title>
+    <meta charset="UTF-8">
+    <title>Priljubljeni dogodki</title>
 </head>
 <body>
-    <h1>Priljubljeni Dogodki</h1>
-    <ul>
+    <h1>Priljubljeni dogodki</h1>
+    {% if favourites %}
+        <ul>
         {% for favourite in favourites %}
             <li>
-                <strong>{{ favourite.event_data.title }}</strong> - {{ favourite.event_data.description }}
+                <strong>[{{ favourite.type|upper }}] {{ favourite.year }}:</strong> {{ favourite.description }}
+                {% if favourite.wikipedia %}
+                    <br>
+                    <strong>Wikipedia povezave:</strong>
+                    <ul>
+                    {% for link in favourite.wikipedia %}
+                        <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
             </li>
         {% endfor %}
-    </ul>
-    <a href="/"><strong>Nazaj na glavno stran</strong></a><br><br>
+        </ul>
+    {% else %}
+        <p>Nimate še priljubljenih dogodkov.</p>
+    {% endif %}
+    <a href="/"><strong>Nazaj na glavno stran</strong></a>
 </body>
 </html>

@@ -206,10 +206,25 @@ def deaths():
 @app.route("/favourites", methods=["GET", "POST"])
 def favourites():
     if request.method == "POST":
-        data = request.get_json()
         ip = get_client_ip()
-        event_id = data.get("event_id")
-        event_data = data.get("event_data")
+
+        # Sprejmi form data (jQuery pošilja kot form-encoded)
+        event_type = request.form.get("type", "")
+        year = request.form.get("year", "")
+        description = request.form.get("description", "")
+        wikipedia = request.form.get("wikipedia", "[]")
+
+        # Ustvari unikatni event_id iz tipa in leta/opisa
+        event_id = f"{event_type}_{year}_{description[:50]}"
+
+        # Shrani celoten dogodek kot JSON string
+        import json
+        event_data = json.dumps({
+            "type": event_type,
+            "year": year,
+            "description": description,
+            "wikipedia": json.loads(wikipedia)
+        })
 
         # Preveri ali že obstaja v priljubljenih
         obstojeci = Favourite.query.filter_by(ip_address=ip, event_id=event_id).first()
@@ -217,16 +232,26 @@ def favourites():
             db.session.delete(obstojeci)
             db.session.commit()
             return jsonify({"message": "Dogodek odstranjen iz priljubljenih"})
-        
+
         nov_fav = Favourite(ip_address=ip, event_id=event_id, event_data=event_data)
         db.session.add(nov_fav)
         db.session.commit()
         return jsonify({"message": "Dogodek dodan med priljubljene"})
 
     # GET - prikaži priljubljene dogodke
+    import json
     ip = get_client_ip()
     priljubljeni = Favourite.query.filter_by(ip_address=ip).all()
-    return render_template("favourites.html", favourites=priljubljeni)
+
+    # Parse JSON event_data za prikaz v predlogi
+    parsed_favourites = []
+    for fav in priljubljeni:
+        try:
+            parsed_favourites.append(json.loads(fav.event_data))
+        except (json.JSONDecodeError, TypeError):
+            parsed_favourites.append({"year": "?", "description": fav.event_data, "wikipedia": []})
+
+    return render_template("favourites.html", favourites=parsed_favourites)
 
 # =====================================================
 # MAIN
