@@ -127,7 +127,7 @@ def events():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": monthName, "day": day, "events": events_list, "births": births_list, "deaths": deaths_list})
+        return jsonify({"month": monthName, "day": day, "events": events_list})
 
     # Običajen obisk - prikaži stran
     return render_template("events.html")
@@ -203,6 +203,30 @@ def deaths():
     return render_template("deaths.html")
 
 #priljubljeni dogodki
+@app.route("/favourites", methods=["GET", "POST"])
+def favourites():
+    if request.method == "POST":
+        data = request.get_json()
+        ip = get_client_ip()
+        event_id = data.get("event_id")
+        event_data = data.get("event_data")
+
+        # Preveri ali že obstaja v priljubljenih
+        obstojeci = Favourite.query.filter_by(ip_address=ip, event_id=event_id).first()
+        if obstojeci:
+            db.session.delete(obstojeci)
+            db.session.commit()
+            return jsonify({"message": "Dogodek odstranjen iz priljubljenih"})
+        
+        nov_fav = Favourite(ip_address=ip, event_id=event_id, event_data=event_data)
+        db.session.add(nov_fav)
+        db.session.commit()
+        return jsonify({"message": "Dogodek dodan med priljubljene"})
+
+    # GET - prikaži priljubljene dogodke
+    ip = get_client_ip()
+    priljubljeni = Favourite.query.filter_by(ip_address=ip).all()
+    return render_template("favourites.html", favourites=priljubljeni)
 
 # =====================================================
 # MAIN

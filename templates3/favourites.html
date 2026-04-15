@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <h1>Priljubljeni Dogodki</h1>
+    <ul>
+        {% for favourite in favourites %}
+            <li>
+                <strong>{{ favourite.event_data.title }}</strong> - {{ favourite.event_data.description }}
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="/"><strong>Nazaj na glavno stran</strong></a><br><br>
+</body>
+</html>
