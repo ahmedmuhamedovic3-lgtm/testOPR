@@ -211,7 +211,6 @@ def random():
 
     # Pridobi naključen datum
     month, day = get_random_date_advanced()
-    month = month_name(month)
 
     # Izbiraj med dogodki, rojstva in smrti, da bo bolj zanimivo
     tip = random.choice(["events", "births", "deaths"])
@@ -219,10 +218,13 @@ def random():
     # Pridobi podatke za ta datum
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/{tip}.json")
     data = odgovor.json()
-    print(data)
+    items = data.get(tip, [])
 
-    # Zabeleži ogled v zgodovino (samo enkrat na IP + tip)
-    date_key = f"random_event"
+    # Slovensko ime meseca za prikaz
+    monthName = month_name(month)
+
+    # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
+    date_key = f"random/{monthName}/{day}"
     obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
     if obstojeci:
         obstojeci.viewed_at = datetime.utcnow()
@@ -231,7 +233,7 @@ def random():
         db.session.add(nov_obisk)
     db.session.commit()
 
-    return render_template("random.html", event=random_event)
+    return render_template("random.html", items=items, month=monthName, day=day, tip=tip)
 
 #priljubljeni dogodki
 @app.route("/favourites", methods=["GET", "POST"])
