@@ -14,7 +14,24 @@
     <button type="button" onclick="goToDate()">Prikaži rojstva</button>
     <br><br><strong><a href="/favourites">Pregled vaših priljubljenih dogodkov</a></strong><br><br>
     <h2 id="resultsTitle"></h2>
-    <div id="birthsDiv"></div>
+    <div id="birthsDiv">
+    {% if items %}
+        <ul>
+        {% for birth in items %}
+            <li><strong>{{ birth.year }}:</strong> {{ birth.description }}
+            {% if birth.wikipedia %}
+                <br><strong>Wikipedia povezave:</strong><ul>
+                {% for link in birth.wikipedia %}
+                    <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
+                {% endfor %}
+                </ul>
+                <div class="fav-btn" onclick='favourites(this, {{ birth|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+            {% endif %}
+            </li><br>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    </div>
 </body>
 </html>
 
