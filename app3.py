@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
-import random
+from random import randrange, choice
 import requests
 import os
 import uuid
@@ -66,7 +66,7 @@ def get_random_date_advanced():
     days_between_dates = time_between_dates.days
     
     # Dodamo naključno število dni začetnemu datumu
-    random_number_of_days = random.randrange(days_between_dates)
+    random_number_of_days = randrange(days_between_dates)
     random_date = start_date + timedelta(days=random_number_of_days)
     
     return random_date.month, random_date.day
@@ -206,14 +206,14 @@ def deaths():
 
 #naključno
 @app.route("/random")
-def random():
+def random_event():
     ip = get_client_ip()
 
     # Pridobi naključen datum
     month, day = get_random_date_advanced()
 
     # Izbiraj med dogodki, rojstva in smrti, da bo bolj zanimivo
-    tip = random.choice(["events", "births", "deaths"])
+    tip = choice(["events", "births", "deaths"])
 
     # Pridobi podatke za ta datum
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/{tip}.json")
