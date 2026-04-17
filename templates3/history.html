@@ -90,7 +90,12 @@ function goToDate() {
 
 function favourites(el, evtJson) {
     var divFavourites = $(el);
-    var evt = JSON.parse(decodeURIComponent(evtJson));
+    var evt;
+    if (typeof evtJson === 'string') {
+        evt = JSON.parse(decodeURIComponent(evtJson));
+    } else {
+        evt = evtJson;
+    }
     $.ajax({
         url: "/favourites",
         method: "POST",
