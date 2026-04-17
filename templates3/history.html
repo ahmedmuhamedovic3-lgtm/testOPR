@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html lang="sl">
 <head>
-    <title>{{ type|capitalize }} skozi čas</title>
+    <title>{{ typesl|capitalize }} skozi čas</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body>
-    <h1>{{ type|capitalize }} skozi čas</h1>
+    <h1>{{ typesl|capitalize }} skozi čas</h1>
     <a href="/"><strong>Nazaj na glavno stran</strong></a><br><br>
     
     {% if not objects %}
     <strong>Izberite dan:</strong>
     <input type="date" name="date" id="dateInput"><br>
-    <button type="button" onclick="goToDate()">Prikaži {{ type }}</button>
+    <button type="button" onclick="goToDate()">Prikaži {% if typesl == "dogodki" %}dogodke{% elif typesl == "rojstva" %}rojstva{% elif typesl == "smrti" %}smrti{% endif %}</button>
     <br><br><strong><a href="/favourites">Pregled vaših priljubljenih dogodkov</a></strong><br><br>
     {% endif %}
     
     <h2 id="resultsTitle"></h2>
     <div id="itemsDiv">
     {% if objects %}
+        <h2>{{ typesl|capitalize }} na dan {{ day }}. {{ month }}:</h2>
         <ul>
         {% for item in objects %}
             <li><strong>{{ item.year }}:</strong> {{ item.description }}
@@ -53,7 +54,8 @@ function goToDate() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
         var key = "{{ type }}";
-        document.getElementById("resultsTitle").innerText = key.charAt(0).toUpperCase() + key.slice(1) + " na dan " + data.day + ". " + data.month;
+        var naslov = "{{ typesl }}";
+        document.getElementById("resultsTitle").innerText = naslov.charAt(0).toUpperCase() + naslov.slice(1) + " na dan " + data.day + ". " + data.month;
         var html = "";
         if (data[key] && data[key].length > 0) {
             html = "<ul>";

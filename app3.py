@@ -142,7 +142,7 @@ def events():
         return jsonify({"month": monthName, "day": day, "events": events_list})
 
     # Običajen obisk - prikaži stran
-    return render_template("history.html", type="events")
+    return render_template("history.html", type="events", typesl="dogodki")
 
 #/births - stran z izbiro datuma (ali AJAX za dogodke)
 @app.route("/births")
@@ -172,7 +172,7 @@ def births():
         return jsonify({"month": monthName, "day": day, "births": births_list})
 
     # Običajen obisk - prikaži stran
-    return render_template("history.html", type="births")
+    return render_template("history.html", type="births", typesl="rojstva")
 
 #/deaths - stran z izbiro datuma (ali AJAX za dogodke)
 @app.route("/deaths")
@@ -202,7 +202,7 @@ def deaths():
         return jsonify({"month": monthName, "day": day, "deaths": deaths_list})
 
     # Običajen obisk - prikaži stran
-    return render_template("history.html", type="deaths")
+    return render_template("history.html", type="deaths", typesl="smrti")
 
 #naključno
 @app.route("/random")
@@ -214,6 +214,12 @@ def random_event():
 
     # Izbiraj med dogodki, rojstva in smrti, da bo bolj zanimivo
     tip = choice(["events", "births", "deaths"])
+    if tip == "events":
+        typesl = "dogodki"
+    elif tip == "births":
+        typesl = "rojstva"
+    else:
+        typesl = "smrti"
 
     # Pridobi podatke za ta datum
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/{tip}.json")
@@ -233,7 +239,7 @@ def random_event():
         db.session.add(nov_obisk)
     db.session.commit()
 
-return render_template("history.html", objects=items, type=tip, month=monthName, day=day)
+    return render_template("history.html", objects=items, type=tip, typesl=typesl, month=monthName, day=day)
 
 #priljubljeni dogodki
 @app.route("/favourites", methods=["GET", "POST"])
