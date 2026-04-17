@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <title>{{ type|capitalize }} skozi čas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>{{ type|capitalize }} skozi čas</h1>
+    <a href="/"><strong>Nazaj na glavno stran</strong></a><br><br>
+    
+    {% if not objects %}
+    <strong>Izberite dan:</strong>
+    <input type="date" name="date" id="dateInput"><br>
+    <button type="button" onclick="goToDate()">Prikaži {{ type }}</button>
+    <br><br><strong><a href="/favourites">Pregled vaših priljubljenih dogodkov</a></strong><br><br>
+    {% endif %}
+    
+    <h2 id="resultsTitle"></h2>
+    <div id="itemsDiv">
+    {% if objects %}
+        <ul>
+        {% for item in objects %}
+            <li><strong>{{ item.year }}:</strong> {{ item.description }}
+            {% if item.wikipedia %}
+                <br><strong>Wikipedia povezave:</strong><ul>
+                {% for link in item.wikipedia %}
+                    <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
+                {% endfor %}
+                </ul>
+                <div class="fav-btn" onclick='favourites(this, {{ item|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+            {% endif %}
+            </li><br>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    </div>
+</body>
+</html>
+
+<script>
+function goToDate() {
+    var dateInput = document.getElementById("dateInput").value;
+    if (!dateInput) { alert("Izberi datum!"); return; }
+    
+    var date = new Date(dateInput);
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    
+    document.getElementById("itemsDiv").innerHTML = "Nalaganje...";
+    document.getElementById("resultsTitle").innerText = "Nalaganje...";
+    
+    fetch("/{{ type }}?month=" + month + "&day=" + day)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var key = "{{ type }}";
+        document.getElementById("resultsTitle").innerText = key.charAt(0).toUpperCase() + key.slice(1) + " na dan " + data.day + ". " + data.month;
+        var html = "";
+        if (data[key] && data[key].length > 0) {
+            html = "<ul>";
+            for (var i = 0; i < data[key].length; i++) {
+                var item = data[key][i];
+                html += "<li><strong>" + item.year + ":</strong> " + item.description;
+                if (item.wikipedia) {
+                    html += "<br><strong>Wikipedia povezave:</strong><ul>";
+                    for (var j = 0; j < item.wikipedia.length; j++) {
+                        var link = item.wikipedia[j];
+                        html += "<li><a href='" + link.wikipedia + "' target='_blank'>" + link.title + "</a></li>";
+                    }
+                    html += "</ul>";
+                    var itemJson = encodeURIComponent(JSON.stringify(item));
+                    html += "<div class='fav-btn' onclick='favourites(this, \"" + itemJson + "\")'><button type='button'>Dodaj med priljubljene</button></div>";
+                }
+                html += "</li><br>";
+            }
+            html += "</ul>";
+        } else {
+            html = "<p>Ni podatkov za ta dan.</p>";
+        }
+        document.getElementById("itemsDiv").innerHTML = html;
+    })
+    .catch(function(err) {
+        document.getElementById("itemsDiv").innerHTML = "<p>Napaka pri nalaganju podatkov.</p>";
+        document.getElementById("resultsTitle").innerText = "";
+    });
+}
+
+function favourites(el, evtJson) {
+    var divFavourites = $(el);
+    var evt = JSON.parse(decodeURIComponent(evtJson));
+    $.ajax({
+        url: "/favourites",
+        method: "POST",
+        data: {
+            type: "{{ type }}",
+            year: evt.year,
+            description: evt.description,
+            wikipedia: JSON.stringify(evt.wikipedia || [])
+        },
+        success: function(result) {
+            divFavourites.html("Dodano med priljubljene!");
+        },
+        error: function(err) {
+            divFavourites.html("Napaka pri dodajanju.");
+        }
+    });
+}
+</script>
