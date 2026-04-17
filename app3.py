@@ -296,6 +296,13 @@ def favourites():
 
     return render_template("favourites.html", favourites=parsed_favourites)
 
+#zgodovina ogledov
+@app.route("/history")
+def history():
+    ip = get_client_ip()
+    zgodovina = History.query.filter_by(ip_address=ip).order_by(History.viewed_at.desc()).all()
+    return render_template("user_history.html", history=zgodovina)
+
 # =====================================================
 # MAIN
 # =====================================================

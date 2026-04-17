@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <h1>Zgodovina ogledov</h1>
+    <ul>
+        {% for item in history %}
+            <li><strong>{{ item.date_viewed }} - {{ item.</strong></li>
+        {% endfor %}
+    </ul>
+    <a href="/"><strong>Nazaj na glavno stran</strong></a><br><br>
+    <strong><a href="/favourites">Pregled vaših priljubljenih dogodkov</a></strong><br><br>
+</body>
+</html>
