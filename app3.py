@@ -234,13 +234,11 @@ def random_event():
     db.session.commit()
 
     if tip == "events":
-        return render_template("events.html", items=items, month=monthName, day=day, tip=tip)
+        return render_template("events.html", items=items, month=monthName, day=day)
     elif tip == "births":
-        return render_template("births.html", items=items, month=monthName, day=day, tip=tip)
+        return render_template("births.html", items=items, month=monthName, day=day)
     else:
-        return render_template("deaths.html", items=items, month=monthName, day=day, tip=tip)
-
-    #return render_template("random.html", items=items, month=monthName, day=day, tip=tip)
+        return render_template("deaths.html", items=items, month=monthName, day=day)
 
 #priljubljeni dogodki
 @app.route("/favourites", methods=["GET", "POST"])

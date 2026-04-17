@@ -9,13 +9,16 @@
 <body>
     <h1>Rojstva skozi čas</h1>
     <a href="/"><strong>Nazaj na glavno stran</strong></a><br><br>
-    <strong>Izberite dan:</strong>
-    <input type="date" name="date" id="dateInput"><br>
-    <button type="button" onclick="goToDate()">Prikaži rojstva</button>
-    <br><br><strong><a href="/favourites">Pregled vaših priljubljenih dogodkov</a></strong><br><br>
+    {% if not items %}
+        <strong>Izberite dan:</strong>
+        <input type="date" name="date" id="dateInput"><br>
+        <button type="button" onclick="goToDate()">Prikaži rojstva</button><br><br>
+    {% endif %}
+    <strong><a href="/favourites">Pregled vaših priljubljenih dogodkov</a></strong><br><br>
     <h2 id="resultsTitle"></h2>
     <div id="birthsDiv">
     {% if items %}
+        <h2>Rojstva na dan {{ day }}. {{ month }}:</h2>
         <ul>
         {% for birth in items %}
             <li><strong>{{ birth.year }}:</strong> {{ birth.description }}
