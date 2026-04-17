@@ -233,7 +233,14 @@ def random_event():
         db.session.add(nov_obisk)
     db.session.commit()
 
-    return render_template("random.html", items=items, month=monthName, day=day, tip=tip)
+    if tip == "events":
+        return render_template("events.html", items=items, month=monthName, day=day, tip=tip)
+    elif tip == "births":
+        return render_template("births.html", items=items, month=monthName, day=day, tip=tip)
+    else:
+        return render_template("deaths.html", items=items, month=monthName, day=day, tip=tip)
+
+    #return render_template("random.html", items=items, month=monthName, day=day, tip=tip)
 
 #priljubljeni dogodki
 @app.route("/favourites", methods=["GET", "POST"])

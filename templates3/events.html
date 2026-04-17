@@ -7,13 +7,22 @@
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
-    <h1>Dogodki skozi čas</h1>
+    <h1>Dogodki skozi čas {{ tip }}</h1>
     <a href="/"><strong>Nazaj na glavno stran</strong></a><br><br>
-    <strong>Izberite dan:</strong>
-    <input type="date" name="date" id="dateInput"><br>
-    <button type="button" onclick="goToDate()">Prikaži dogodke</button>
-    <br><br><strong><a href="/favourites">Pregled vaših priljubljenih dogodkov</a></strong><br><br>
-    <h2 id="resultsTitle"></h2>
+    {% if tip %}
+        <script>
+            // Ta koda se bo vstavila v HTML in izvedla samo, če 'tip' obstaja v Pythonu
+            window.onload = function() {
+                goToDate(); 
+            };
+        </script>
+    {% else %}
+        <strong>Izberite dan:</strong>
+        <input type="date" name="date" id="dateInput"><br>
+        <button type="button" onclick="goToDate()">Prikaži dogodke</button>
+        <br><br><strong><a href="/favourites">Pregled vaših priljubljenih dogodkov</a></strong><br><br>
+        <h2 id="resultsTitle"></h2>
+    {% endif %}
     <div id="eventsDiv"></div>
 </body>
 </html>
@@ -27,7 +36,12 @@ function parseDate(dateStr) {
 }
 
 function goToDate() {
-    var dateInput = document.getElementById("dateInput").value;
+    if ({{ tip|tojson|e }}) {
+        var dateInput = "2026-{{ month }}-{{ day }}";
+    } 
+    else {
+        var dateInput = document.getElementById("dateInput").value;
+    }
     if (!dateInput) {
         alert("Izberi datum!");
         return;
