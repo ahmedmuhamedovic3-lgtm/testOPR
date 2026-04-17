@@ -13,8 +13,15 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////workspaces/testOPR/db3.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "skrivnostniKljucZa3Nalogo"
 
+# Permanent sessions
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365000)  # 1000 years
+
 # Inicializacija baze
 db = SQLAlchemy(app)
+
+# Ustvari tabele če še ne obstajajo
+with app.app_context():
+    db.create_all()
 
 
 # =====================================================
@@ -55,6 +62,7 @@ def get_client_ip():
     """Vrne unikatni ID uporabnika iz session-a (vsak brskalnik ima svojega)"""
     if 'user_id' not in session:
         session['user_id'] = str(uuid.uuid4())[:8]
+        session.permanent = True
     return session['user_id']
 
 def get_random_date_advanced():
@@ -84,10 +92,6 @@ def month_name(month):
 #/ - domača stran
 @app.route("/")
 def home():
-    # Ustvari bazo če še ne obstaja
-    with app.app_context():
-        db.create_all()
-
     # Geolokacija potrebuje pravi IP
     real_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0]
     odgovor = requests.get(f"https://free.freeipapi.com/api/json/{real_ip}")
