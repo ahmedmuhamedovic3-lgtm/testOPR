@@ -7,7 +7,21 @@
     <h1>Zgodovina ogledov</h1>
     <ul>
         {% for item in history %}
-            <li><strong>{{ item.date_viewed }} - {{ item.event_name }}</strong></li>
+            <li>
+                {% set parts = item.date_viewed.split('/') %}
+                {% set type = parts[0] %}
+                {% set month_name = parts[1] %}
+                {% set day = parts[2] %}
+                
+                {% set month_map = {
+                    'januar': '1', 'februar': '2', 'marec': '3', 'april': '4',
+                    'maj': '5', 'junij': '6', 'julij': '7', 'avgust': '8',
+                    'september': '9', 'oktober': '10', 'november': '11', 'december': '12'
+                } %}
+                {% set month_num = month_map.get(month_name, '1') %}
+                
+                <strong><a href="/{{ type }}?month={{ month_num }}&day={{ day }}">{{ item.date_viewed }}</a></strong>
+            </li>
         {% endfor %}
     </ul>
     <a href="/"><strong>Nazaj na glavno stran</strong></a><br><br>

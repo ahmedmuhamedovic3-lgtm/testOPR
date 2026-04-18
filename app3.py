@@ -37,15 +37,6 @@ class Favourite(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-class Note(db.Model):
-    """Beležke uporabnikov"""
-    id = db.Column(db.Integer, primary_key=True)
-    ip_address = db.Column(db.String(50), nullable=False)
-    event_id = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-
 class History(db.Model):
     """Zgodovina ogledov"""
     id = db.Column(db.Integer, primary_key=True)
@@ -92,14 +83,6 @@ def month_name(month):
 #/ - domača stran
 @app.route("/")
 def home():
-    # Geolokacija potrebuje pravi IP
-    real_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0]
-    odgovor = requests.get(f"https://free.freeipapi.com/api/json/{real_ip}")
-    data = odgovor.json()
-    kraj = data["cityName"]
-    lat = data["latitude"]
-    lon = data["longitude"]
-
     x = datetime.now()
     day = x.day
     month = x.month
@@ -118,7 +101,7 @@ def home():
 
     month = month_name(month)
 
-    return render_template("home.html", kraj=kraj, lat=lat, lon=lon, day=day, month=month, events=events_list, births=births_list, deaths=deaths_list)
+    return render_template("home.html", day=day, month=month, events=events_list, births=births_list, deaths=deaths_list)
 
 #/events - stran z izbiro datuma (ali AJAX za dogodke)
 @app.route("/events")
@@ -129,7 +112,10 @@ def events():
         month = request.args.get('month')
         day = request.args.get('day')
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
-        data = odgovor.json()
+        try:
+            data = odgovor.json()
+        except requests.exceptions.JSONDecodeError:
+            data = {"events": []}
         events_list = data.get("events", [])
         monthName = month_name(month)
 
@@ -143,7 +129,12 @@ def events():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": monthName, "day": day, "events": events_list})
+        # Check if it's an AJAX request or regular page navigation
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({"month": monthName, "day": day, "events": events_list})
+        else:
+            # Regular page navigation - render HTML with data
+            return render_template("history.html", type="events", typesl="dogodki", month=monthName, day=day, objects=events_list)
 
     # Običajen obisk - prikaži stran
     return render_template("history.html", type="events", typesl="dogodki")
@@ -159,7 +150,10 @@ def births():
         day = request.args.get('day')
 
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/births.json")
-        data = odgovor.json()
+        try:
+            data = odgovor.json()
+        except requests.exceptions.JSONDecodeError:
+            data = {"births": []}
         births_list = data.get("births", [])
         monthName = month_name(month)
 
@@ -173,7 +167,12 @@ def births():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": monthName, "day": day, "births": births_list})
+        # Check if it's an AJAX request or regular page navigation
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({"month": monthName, "day": day, "births": births_list})
+        else:
+            # Regular page navigation - render HTML with data
+            return render_template("history.html", type="births", typesl="rojstva", month=monthName, day=day, objects=births_list)
 
     # Običajen obisk - prikaži stran
     return render_template("history.html", type="births", typesl="rojstva")
@@ -189,7 +188,10 @@ def deaths():
         day = request.args.get('day')
 
         odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/deaths.json")
-        data = odgovor.json()
+        try:
+            data = odgovor.json()
+        except requests.exceptions.JSONDecodeError:
+            data = {"deaths": []}
         deaths_list = data.get("deaths", [])
         monthName = month_name(month)
 
@@ -203,7 +205,12 @@ def deaths():
             db.session.add(nov_obisk)
         db.session.commit()
 
-        return jsonify({"month": monthName, "day": day, "deaths": deaths_list})
+        # Check if it's an AJAX request or regular page navigation
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({"month": monthName, "day": day, "deaths": deaths_list})
+        else:
+            # Regular page navigation - render HTML with data
+            return render_template("history.html", type="deaths", typesl="smrti", month=monthName, day=day, objects=deaths_list)
 
     # Običajen obisk - prikaži stran
     return render_template("history.html", type="deaths", typesl="smrti")
@@ -227,14 +234,17 @@ def random_event():
 
     # Pridobi podatke za ta datum
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/{tip}.json")
-    data = odgovor.json()
+    try:
+        data = odgovor.json()
+    except requests.exceptions.JSONDecodeError:
+        data = {tip: []}
     items = data.get(tip, [])
 
     # Slovensko ime meseca za prikaz
     monthName = month_name(month)
 
     # Zabeleži ogled v zgodovino (samo enkrat na IP + datum + tip)
-    date_key = f"random/{monthName}/{day}"
+    date_key = f"{tip}/{monthName}/{day}"
     obstojeci = History.query.filter_by(ip_address=ip, date_viewed=date_key).first()
     if obstojeci:
         obstojeci.viewed_at = datetime.utcnow()
