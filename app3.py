@@ -300,9 +300,11 @@ def favourites():
     parsed_favourites = []
     for fav in priljubljeni:
         try:
-            parsed_favourites.append(json.loads(fav.event_data))
+            event = json.loads(fav.event_data)
+            event['created_at'] = fav.created_at.strftime('%d.%m.%Y ob %H:%M')
+            parsed_favourites.append(event)
         except (json.JSONDecodeError, TypeError):
-            parsed_favourites.append({"year": "?", "description": fav.event_data, "wikipedia": []})
+            parsed_favourites.append({"year": "?", "description": fav.event_data, "wikipedia": [], "created_at": ""})
 
     return render_template("favourites.html", favourites=parsed_favourites)
 

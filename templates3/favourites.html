@@ -8,11 +8,14 @@
 </head>
 <body>
     <h1>Priljubljeni dogodki</h1>
+    <a href="/"><strong>Nazaj na glavno stran</strong></a><br>
+    <a href="/history"><strong>Zgodovina ogledov</strong></a><br><br>
     {% if favourites %}
         <ul>
         {% for favourite in favourites %}
             <li>
                 <strong>[{{ favourite.type|upper }}] {{ favourite.year }}:</strong> {{ favourite.description }}
+                <br><small><em>Ogledano: {{ favourite.created_at }}</em></small>
                 {% if favourite.wikipedia %}
                     <br>
                     <strong>Wikipedia povezave:</strong>
@@ -30,7 +33,6 @@
     {% else %}
         <p>Nimate še priljubljenih dogodkov.</p>
     {% endif %}
-    <a href="/"><strong>Nazaj na glavno stran</strong></a>
 </body>
 </html>
 
