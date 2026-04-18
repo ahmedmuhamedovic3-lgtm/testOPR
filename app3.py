@@ -14,7 +14,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "skrivnostniKljucZa3Nalogo"
 
 # Permanent sessions
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365000)  # 1000 years
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)  # 1 year (browser-compatible)
 
 # Inicializacija baze
 db = SQLAlchemy(app)
