@@ -265,6 +265,8 @@ def favourites():
         event_type = request.form.get("type", "")
         year = request.form.get("year", "")
         description = request.form.get("description", "")
+        month = request.form.get("month", "")
+        day = request.form.get("day", "")
         wikipedia = request.form.get("wikipedia", "[]")
 
         # Ustvari unikatni event_id iz tipa in leta/opisa
@@ -276,6 +278,8 @@ def favourites():
             "type": event_type,
             "year": year,
             "description": description,
+            "month": month,
+            "day": day,
             "wikipedia": json.loads(wikipedia)
         })
 
