@@ -56,6 +56,12 @@ def get_client_ip():
         session.permanent = True
     return session['user_id']
 
+def get_fav_ids():
+    """Vrne seznam ID-jev priljubljenih dogodkov za trenutnega uporabnika"""
+    ip = get_client_ip()
+    priljubljeni = Favourite.query.filter_by(ip_address=ip).all()
+    return [fav.event_id for fav in priljubljeni]
+
 def get_random_date_advanced():
     start_date = datetime(2024, 1, 1) # Prestopno leto za varnost pri 29. feb
     end_date = datetime(2024, 12, 31)
@@ -90,7 +96,7 @@ def home():
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/events.json")
     data = odgovor.json()
     events_list = data.get("events", [])
-    
+
     odgovor = requests.get(f"https://byabbe.se/on-this-day/{month}/{day}/births.json")
     data = odgovor.json()
     births_list = data.get("births", [])
@@ -101,7 +107,7 @@ def home():
 
     month = month_name(month)
 
-    return render_template("home.html", day=day, month=month, events=events_list, births=births_list, deaths=deaths_list)
+    return render_template("home.html", day=day, month=month, events=events_list, births=births_list, deaths=deaths_list, fav_ids=get_fav_ids())
 
 #/events - stran z izbiro datuma (ali AJAX za dogodke)
 @app.route("/events")
@@ -134,10 +140,10 @@ def events():
             return jsonify({"month": monthName, "day": day, "events": events_list})
         else:
             # Regular page navigation - render HTML with data
-            return render_template("history.html", type="events", typesl="dogodki", month=monthName, day=day, objects=events_list)
+            return render_template("history.html", type="events", typesl="dogodki", month=monthName, day=day, objects=events_list, fav_ids=get_fav_ids())
 
     # Običajen obisk - prikaži stran
-    return render_template("history.html", type="events", typesl="dogodki")
+    return render_template("history.html", type="events", typesl="dogodki", fav_ids=get_fav_ids())
 
 #/births - stran z izbiro datuma (ali AJAX za dogodke)
 @app.route("/births")
@@ -172,10 +178,10 @@ def births():
             return jsonify({"month": monthName, "day": day, "births": births_list})
         else:
             # Regular page navigation - render HTML with data
-            return render_template("history.html", type="births", typesl="rojstva", month=monthName, day=day, objects=births_list)
+            return render_template("history.html", type="births", typesl="rojstva", month=monthName, day=day, objects=births_list, fav_ids=get_fav_ids())
 
     # Običajen obisk - prikaži stran
-    return render_template("history.html", type="births", typesl="rojstva")
+    return render_template("history.html", type="births", typesl="rojstva", fav_ids=get_fav_ids())
 
 #/deaths - stran z izbiro datuma (ali AJAX za dogodke)
 @app.route("/deaths")
@@ -210,10 +216,10 @@ def deaths():
             return jsonify({"month": monthName, "day": day, "deaths": deaths_list})
         else:
             # Regular page navigation - render HTML with data
-            return render_template("history.html", type="deaths", typesl="smrti", month=monthName, day=day, objects=deaths_list)
+            return render_template("history.html", type="deaths", typesl="smrti", month=monthName, day=day, objects=deaths_list, fav_ids=get_fav_ids())
 
     # Običajen obisk - prikaži stran
-    return render_template("history.html", type="deaths", typesl="smrti")
+    return render_template("history.html", type="deaths", typesl="smrti", fav_ids=get_fav_ids())
 
 #naključno
 @app.route("/random")
@@ -253,7 +259,7 @@ def random_event():
         db.session.add(nov_obisk)
     db.session.commit()
 
-    return render_template("history.html", objects=items, type=tip, typesl=typesl, month=monthName, day=day)
+    return render_template("history.html", objects=items, type=tip, typesl=typesl, month=monthName, day=day, fav_ids=get_fav_ids())
 
 #priljubljeni dogodki
 @app.route("/favourites", methods=["GET", "POST"])

@@ -31,7 +31,7 @@
                     <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
                 {% endfor %}
                 </ul>
-                <div class="fav-btn" onclick='favourites(this, {{ item|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+                <div class="fav-btn" onclick='favourites(this, {{ item|tojson|e }}, "{{ type }}")'><button type="button">{% if type + "_" + item.year + "_" + (item.description or "")[:50] in fav_ids %}Odstrani iz priljubljenih{% else %}Dodaj med priljubljene{% endif %}</button></div>
             {% endif %}
             </li><br>
         {% endfor %}
@@ -42,6 +42,8 @@
 </html>
 
 <script>
+var favIds = {{ fav_ids|tojson }};
+
 function goToDate() {
     var dateInput = document.getElementById("dateInput").value;
     if (!dateInput) { alert("Izberi datum!"); return; }
@@ -70,6 +72,8 @@ function goToDate() {
                 var item = data[key][i];
                 item.month = data.month;
                 item.day = data.day;
+                var eventId = "{{ type }}" + "_" + item.year + "_" + (item.description || "").substring(0, 50);
+                var btnText = favIds.includes(eventId) ? "Odstrani iz priljubljenih" : "Dodaj med priljubljene";
                 html += "<li><strong>" + item.year + ":</strong> " + item.description;
                 if (item.wikipedia) {
                     html += "<br><strong>Wikipedia povezave:</strong><ul>";
@@ -79,7 +83,7 @@ function goToDate() {
                     }
                     html += "</ul>";
                     var itemJson = encodeURIComponent(JSON.stringify(item));
-                    html += "<div class='fav-btn' onclick='favourites(this, \"" + itemJson + "\")'><button type='button'>Dodaj med priljubljene</button></div>";
+                    html += "<div class='fav-btn' onclick='favourites(this, \"" + itemJson + "\", \"" + eventId + "\")'><button type='button'>" + btnText + "</button></div>";
                 }
                 html += "</li><br>";
             }
@@ -115,7 +119,11 @@ function favourites(el, evtJson) {
             wikipedia: JSON.stringify(evt.wikipedia || [])
         },
         success: function(result) {
-            divFavourites.html("Dodano med priljubljene!");
+            if (result.message && result.message.includes("odstranjen")) {
+                divFavourites.html("Dodaj med priljubljene");
+            } else {
+                divFavourites.html("Odstrani iz priljubljenih");
+            }
         },
         error: function(err) {
             divFavourites.html("Napaka pri dodajanju.");

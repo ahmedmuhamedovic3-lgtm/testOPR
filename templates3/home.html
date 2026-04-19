@@ -28,7 +28,7 @@
                 {% for link in event.wikipedia %}
                     <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
                 {% endfor %}
-                <div class="fav-btn" onclick='favourites(this, {{ event|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+                <div class="fav-btn" onclick='favourites(this, {{ event|tojson|e }}, "events")'><button type="button">{% if "events_" + event.year + "_" + (event.description or "")[:50] in fav_ids %}Odstrani iz priljubljenih{% else %}Dodaj med priljubljene{% endif %}</button></div>
                 </ul>
             {% endif %}
             </li><br>
@@ -49,7 +49,7 @@
                 {% for link in birth.wikipedia %}
                     <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
                 {% endfor %}
-                <div class="fav-btn" onclick='favourites(this, {{ birth|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+                <div class="fav-btn" onclick='favourites(this, {{ birth|tojson|e }}, "births")'><button type="button">{% if "births_" + birth.year + "_" + (birth.description or "")[:50] in fav_ids %}Odstrani iz priljubljenih{% else %}Dodaj med priljubljene{% endif %}</button></div>
                 </ul>
             {% endif %}
             </li><br>
@@ -70,7 +70,7 @@
                 {% for link in death.wikipedia %}
                     <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
                 {% endfor %}
-                <div class="fav-btn" onclick='favourites(this, {{ death|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+                <div class="fav-btn" onclick='favourites(this, {{ death|tojson|e }}, "deaths")'><button type="button">{% if "deaths_" + death.year + "_" + (death.description or "")[:50] in fav_ids %}Odstrani iz priljubljenih{% else %}Dodaj med priljubljene{% endif %}</button></div>
                 </ul>
             {% endif %}
             </li><br>
@@ -95,15 +95,25 @@ function births() {
 function deaths() {
     window.location.href = "/deaths";
 }
-function favourites(el, evt) {
+var favIds = {{ fav_ids|tojson }};
+
+function getFavId(type, year, description) {
+    return type + "_" + year + "_" + (description || "").substring(0, 50);
+}
+
+function favourites(el, evt, type) {
     var divFavourites = $(el);
     evt.month = "{{ month }}";
     evt.day = "{{ day }}";
+    var eventId = getFavId(type, evt.year, evt.description);
+    divFavourites.data("eventId", eventId);
+    divFavourites.data("evt", evt);
+    divFavourites.data("type", type);
     $.ajax({
         url: "/favourites",
         method: "POST",
         data: {
-            type: "event",
+            type: type,
             year: evt.year,
             description: evt.description,
             month: evt.month,
@@ -111,7 +121,11 @@ function favourites(el, evt) {
             wikipedia: JSON.stringify(evt.wikipedia)
         },
         success: function(result) {
-            divFavourites.html("Dodano med priljubljene!");
+            if (result.message && result.message.includes("odstranjen")) {
+                divFavourites.html("Dodaj med priljubljene");
+            } else {
+                divFavourites.html("Odstrani iz priljubljenih");
+            }
         },
         error: function(err) {
             divFavourites.html("Napaka pri dodajanju med priljubljene.");
