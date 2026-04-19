@@ -15,7 +15,7 @@
         {% for favourite in favourites %}
             <li>
                 <strong>[{{ favourite.type|upper }}] {{ favourite.year }}:</strong> {{ favourite.description }}
-                <br><small><em>Ogledano: {{ favourite.created_at }}</em></small>
+                
                 {% if favourite.wikipedia %}
                     <br>
                     <strong>Wikipedia povezave:</strong>

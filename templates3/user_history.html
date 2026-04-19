@@ -23,6 +23,7 @@
                 {% set month_num = month_map.get(month_name, '1') %}
                 
                 <strong><a href="/{{ type }}?month={{ month_num }}&day={{ day }}">{{ item.date_viewed }}</a></strong>
+                <br><small><em>Ogledano: {{ item.viewed_at.strftime('%d.%m.%Y ob %H:%M') }}</em></small>
             </li>
         {% endfor %}
     </ul>
