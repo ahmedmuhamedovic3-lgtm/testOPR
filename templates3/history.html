@@ -110,8 +110,8 @@ function favourites(el, evtJson) {
             type: "{{ type }}",
             year: evt.year,
             description: evt.description,
-            month: "{{ month }}",
-            day: "{{ day }}",
+            month: evt.month || "{{ month }}",
+            day: evt.day || "{{ day }}",
             wikipedia: JSON.stringify(evt.wikipedia || [])
         },
         success: function(result) {
