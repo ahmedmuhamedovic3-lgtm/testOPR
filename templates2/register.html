@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Register</title>
+</head>
+<body>
+    <h2>Registriraj</h2>
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form action="/register" method="post">
+        {% if not session.get("need_security") %}
+        <label>Uporabniško ime:</label><br>
+        <input type="text" name="username" required><br><br>
+        <label>Geslo:</label><br>
+        <input type="password" name="password" required><br><br>
+        {% endif %}
+        <label>Varnostno vprašanje:</label><br>
+        <select name="security_question" required>
+            <option value="">-- Izberi vprašanje --</option>
+            <option value="pet">Kako se je imenoval tvoj prvi hišni ljubljenček?</option>
+            <option value="solo">Kako se imenuje osnovna šola, ki si jo obiskoval?</option>
+            <option value="rojstni">Katerega meseca imaš rojstni dan?</option>
+        </select><br><br>
+        <label>Odgovor:</label><br>
+        <input type="text" name="security_answer" required><br><br>
+        {% if session.get("need_security") %}
+        <button type="submit">NASTAVI</button>
+        {% else %}
+        <button type="submit">REGISTER</button>
+        {% endif %}
+    </form>
+    {% if not session.get("need_security") %}
+    <a href="/login">Si že registriran?</a>
+    {% endif %}
+</body>
+</html>

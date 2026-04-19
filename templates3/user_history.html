@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <h1>Zgodovina ogledov</h1>
+    <a href="/"><strong>Nazaj na glavno stran</strong></a><br>
+    <strong><a href="/favourites">Pregled vaših priljubljenih dogodkov</a></strong><br><br>
+    <ul>
+        {% for item in history %}
+            <li>
+                {% set parts = item.date_viewed.split('/') %}
+                {% set type = parts[0] %}
+                {% set month_name = parts[1] %}
+                {% set day = parts[2] %}
+                
+                {% set month_map = {
+                    'januar': '1', 'februar': '2', 'marec': '3', 'april': '4',
+                    'maj': '5', 'junij': '6', 'julij': '7', 'avgust': '8',
+                    'september': '9', 'oktober': '10', 'november': '11', 'december': '12'
+                } %}
+                {% set month_num = month_map.get(month_name, '1') %}
+                
+                <strong><a href="/{{ type }}?month={{ month_num }}&day={{ day }}">{{ item.date_viewed }}</a></strong>
+                <br><small><em>Ogledano: {{ item.viewed_at.strftime('%d.%m.%Y ob %H:%M') }}</em></small>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

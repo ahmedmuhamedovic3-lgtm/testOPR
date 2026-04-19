@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <h1>Note dashboard</h1>
+    Pozdravljen {{ uporabnik }}
+    <br>
+    <a href="/profile">Tvoj profil</a>
+    <br>
+    <h2>Objave:</h2>
+    {% if posts %}
+        {% for post in posts %}
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0; background: #f9f9f9;">
+            <p><strong>{{ post.username }}</strong></p>
+            <p style="white-space: pre-wrap;">{{ post.content[:50] }}{% if post.content|length > 50 %}...{% endif %}</p>
+            {% if post.images %}
+                {% for img in post.images %}
+                    <img src="/uploads/{{ img }}" height="150" style="margin: 5px;">
+                {% endfor %}
+                <br>
+            {% endif %}
+            <a href="javascript:void(0)" id="l-{{ post.id }}" onclick="like('{{ post.id }}')">👍 <span id="lc-{{ post.id }}">{{ post.like }}</span></a>
+            <a href="javascript:void(0)" id="d-{{ post.id }}" onclick="dislike('{{ post.id }}')">👎 <span id="dc-{{ post.id }}">{{ post.dislike }}</span></a>
+            <a href="/comments/{{ post.id }}" onclick="comment('{{ post.id }}', '{{ post.comment }}')">💬 {{ post.comment | length }} komentarjev</a>
+        </div>
+        {% endfor %}
+        <br><br><br>
+    {% else %}
+        <p>Še ni objav.</p>
+    {% endif %}
+    <a href="/logout">ODJAVI SE</a>
+</body>
+</html>
+
+<script>
+    function like(id) {
+        $.ajax({
+            url: "/like",
+            method: "POST",
+            data: {id: id},
+            success: function (data) {
+                $("#lc-" + id).text(data.like);
+                $("#dc-" + id).text(data.dislike);
+                $("#l-" + id).css("color", data.likeActive ? "green" : "");
+                $("#d-" + id).css("color", data.dislikeActive ? "red" : "");
+            }
+        });
+    }
+    function dislike(id) {
+        $.ajax({
+            url: "/dislike",
+            method: "POST",
+            data: {id: id},
+            success: function (data) {
+                $("#lc-" + id).text(data.like);
+                $("#dc-" + id).text(data.dislike);
+                $("#l-" + id).css("color", data.likeActive ? "green" : "");
+                $("#d-" + id).css("color", data.dislikeActive ? "red" : "");
+            }
+        });
+    }
+    function comment(id) {
+        window.location.href = "/comments/" + id;
+    }
+</script>

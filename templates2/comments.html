@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Komentarji</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <h1>Komentarji</h1>
+    <button onclick="newComment()">Dodaj komentar</button><br><br>
+    {% if comments %}
+        <div id="comment">
+        {% for comment in comments %}
+            <p><strong>{{ comment.username }}</strong><br>{{ comment.content }}</p>
+            {% if comment.username == uporabnik %}
+            <button onclick="deleteComment({{ loop.index0 }})">ODSTRANI</button><br><br>
+            {% endif %}
+        {% endfor %}
+        </div>
+    {% else %}
+        <div id="comment">Še ni komentarjev.</div><br>
+    {% endif %}
+    <a href="/dashboard">NAZAJ</a><br>
+    <a href="/logout">ODJAVI SE</a>
+</body>
+</html>
+
+<script>
+    function newComment() {
+        // 1. Ustvarimo nov textarea
+        var komentar = document.createElement("textarea");
+        komentar.style.display = "block";
+
+        // 2. Ustvarimo gumb
+        var gumb = document.createElement("button");
+        gumb.innerHTML = "POŠLJI";
+
+        // Funkcija ob kliku na gumb
+        gumb.onclick = function() {
+            var paragraf = document.createElement("p");
+            paragraf.innerHTML = "<strong>{{ uporabnik }}</strong><br>" + komentar.value + "<br><em>(shranjevanje...)</em><br><br>";
+            document.getElementById("comment").replaceChild(paragraf, komentar);
+            gumb.remove();
+
+            // Shrani v bazo
+            $.ajax({
+                url: "/comments/{{ id }}",
+                method: "POST",
+                data: { content: komentar.value },
+                success: function(response) {
+                    // Ponovno naložimo za pravilne indekse in gumb ODSTRANI
+                    location.reload();
+                },
+                error: function(xhr) {
+                    console.error("Napaka pri shranjevanju komentarja:", xhr.responseText);
+                    alert("Napaka pri shranjevanju komentarja!");
+                }
+            });
+        };
+
+        // 3. Dodamo v #comment
+        var ovitek = document.getElementById("comment");
+        // Odstranimo "Še ni komentarjev" besedilo
+        if (ovitek.childNodes.length === 1 && ovitek.childNodes[0].nodeType === 3) {
+            ovitek.innerHTML = "";
+        }
+        ovitek.appendChild(komentar);
+        ovitek.appendChild(gumb);
+    }
+
+    function deleteComment(index) {
+        $.ajax({
+            url: "/comments/{{ id }}",
+            method: "POST",
+            data: { action: "delete", index: index },
+            success: function() {
+                location.reload();
+            }
+        });
+    }
+</script>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <h1>Dogodki skozi čas</h1>
+    Ta stran je namenjena prikazu dogodkov skozi čas. Tukaj lahko vidite pomembne trenutke, ki so se zgodili skozi zgodovino.<br><br>
+    <strong>Izberite opcijo:</strong>
+    <form method="get" action="/events">
+        <button type="button" onclick="events()">Dogodki</button><br>
+        <button type="button" onclick="births()">Rojstva</button><br>
+        <button type="button" onclick="deaths()">Smrti</button><br>
+    </form>
+    <button type="button" onclick="random()">Naključni dogodek</button>
+    <br><br>
+    <a href="/history"><strong>Zgodovina ogledov</strong></a><br>
+    <strong><a href="/favourites">Pregled vaših priljubljenih dogodkov</a></strong><br><br>
+    <h2>Dogodki na današnji dan:</h2>
+    {% if events %}
+        <ul>
+        {% for event in events %}
+            <li><strong>{{ event.year }}:</strong> {{ event.description }}
+            {% if event.wikipedia %}
+                <br>
+                <strong>Wikipedia povezave:</strong>
+                <ul>
+                {% for link in event.wikipedia %}
+                    <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
+                {% endfor %}
+                <div class="fav-btn" onclick='favourites(this, {{ event|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+                </ul>
+            {% endif %}
+            </li><br>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Ni dogodkov za ta dan.</p>
+    {% endif %}
+    <h2>Rojstva na današnji dan:</h2>
+    {% if births %}
+        <ul>
+        {% for birth in births %}
+            <li><strong>{{ birth.year }}:</strong> {{ birth.description }}
+            {% if birth.wikipedia %}
+                <br>
+                <strong>Wikipedia povezave:</strong>
+                <ul>
+                {% for link in birth.wikipedia %}
+                    <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
+                {% endfor %}
+                <div class="fav-btn" onclick='favourites(this, {{ birth|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+                </ul>
+            {% endif %}
+            </li><br>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Ni dogodkov za ta dan.</p>
+    {% endif %}
+    <h2>Smrti na današnji dan:</h2>
+    {% if deaths %}
+        <ul>
+        {% for death in deaths %}
+            <li><strong>{{ death.year }}:</strong> {{ death.description }}
+            {% if death.wikipedia %}
+                <br>
+                <strong>Wikipedia povezave:</strong>
+                <ul>
+                {% for link in death.wikipedia %}
+                    <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
+                {% endfor %}
+                <div class="fav-btn" onclick='favourites(this, {{ death|tojson|e }})'><button type="button">Dodaj med priljubljene</button></div>
+                </ul>
+            {% endif %}
+            </li><br>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Ni dogodkov za ta dan.</p>
+    {% endif %}
+    
+
+</body>
+</html>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+function events() {
+    window.location.href = "/events";
+}
+function births() {
+    window.location.href = "/births";
+}
+function deaths() {
+    window.location.href = "/deaths";
+}
+function favourites(el, evt) {
+    var divFavourites = $(el);
+    $.ajax({
+        url: "/favourites",
+        method: "POST",
+        data: {
+            type: "event",
+            year: evt.year,
+            description: evt.description,
+            wikipedia: JSON.stringify(evt.wikipedia)
+        },
+        success: function(result) {
+            divFavourites.html("Dodano med priljubljene!");
+        },
+        error: function(err) {
+            divFavourites.html("Napaka pri dodajanju med priljubljene.");
+        }
+    });
+}
+function random() {
+    window.location.href = "/random";
+}
+</script>

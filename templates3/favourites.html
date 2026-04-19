@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <title>Priljubljeni dogodki</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <h1>Priljubljeni dogodki</h1>
+    <a href="/"><strong>Nazaj na glavno stran</strong></a><br>
+    <a href="/history"><strong>Zgodovina ogledov</strong></a><br><br>
+    {% if favourites %}
+        <ul>
+        {% for favourite in favourites %}
+            <li>
+                <strong>[{{ favourite.type|upper }}] {{ favourite.year }}:</strong> {{ favourite.description }}
+                
+                {% if favourite.wikipedia %}
+                    <br>
+                    <strong>Wikipedia povezave:</strong>
+                    <ul>
+                    {% for link in favourite.wikipedia %}
+                        <li><a href="{{ link.wikipedia }}" target="_blank">{{ link.title }}</a></li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+                <div class="fav-btn" data-index="{{ loop.index0 }}"><button type="button">Odstrani iz priljubljenih</button></div>
+            </li>
+            <br>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nimate še priljubljenih dogodkov.</p>
+    {% endif %}
+</body>
+</html>
+
+<script>
+    var favouritesData = {{ favourites | tojson }};
+
+    $(document).on('click', '.fav-btn button', function() {
+        var divFavourites = $(this).closest('.fav-btn');
+        var index = divFavourites.data('index');
+        var evt = favouritesData[index];
+
+        $.ajax({
+            url: "/favourites",
+            method: "POST",
+            data: {
+                type: evt.type,
+                year: evt.year,
+                description: evt.description,
+                wikipedia: JSON.stringify(evt.wikipedia || [])
+            },
+            success: function(result) {
+                divFavourites.closest('li').remove();
+                if ($('.fav-btn').length === 0) {
+                    $('ul').remove();
+                    $('body').prepend('<p>Nimate še priljubljenih dogodkov.</p>');
+                }
+            },
+            error: function(err) {
+                divFavourites.html("Napaka pri odstranjevanju.");
+            }
+        });
+    });
+</script>
