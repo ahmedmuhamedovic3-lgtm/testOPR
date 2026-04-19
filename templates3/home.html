@@ -97,6 +97,8 @@ function deaths() {
 }
 function favourites(el, evt) {
     var divFavourites = $(el);
+    evt.month = "{{ month }}";
+    evt.day = "{{ day }}";
     $.ajax({
         url: "/favourites",
         method: "POST",
@@ -104,6 +106,8 @@ function favourites(el, evt) {
             type: "event",
             year: evt.year,
             description: evt.description,
+            month: evt.month,
+            day: evt.day,
             wikipedia: JSON.stringify(evt.wikipedia)
         },
         success: function(result) {
