@@ -14,7 +14,7 @@
         <ul>
         {% for favourite in favourites %}
             <li>
-                <strong>[{{ favourite.type|upper }}] {{ favourite.year }}:</strong> {{ favourite.description }}
+                <strong>[{{ favourite.type|upper }}] {{ favourite.day }}. {{ favourite.month }} {{ favourite.year }}:</strong> {{ favourite.description }}
                 
                 {% if favourite.wikipedia %}
                     <br>
