@@ -68,6 +68,8 @@ function goToDate() {
             html = "<ul>";
             for (var i = 0; i < data[key].length; i++) {
                 var item = data[key][i];
+                item.month = data.month;
+                item.day = data.day;
                 html += "<li><strong>" + item.year + ":</strong> " + item.description;
                 if (item.wikipedia) {
                     html += "<br><strong>Wikipedia povezave:</strong><ul>";
